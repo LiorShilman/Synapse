@@ -14,10 +14,6 @@ import GuidePage from '../guide/GuidePage';
 export default function AppShell() {
   const [showGuide, setShowGuide] = useState(false);
 
-  if (showGuide) {
-    return <GuidePage onClose={() => setShowGuide(false)} />;
-  }
-
   return (
     <div className="app-shell">
       <StatusBar onOpenGuide={() => setShowGuide(true)} />
@@ -51,6 +47,8 @@ export default function AppShell() {
       </div>
 
       <ConsensusExplosion />
+
+      {showGuide && <GuidePage onClose={() => setShowGuide(false)} />}
     </div>
   );
 }
