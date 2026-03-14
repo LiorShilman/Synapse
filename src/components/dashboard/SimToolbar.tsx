@@ -212,6 +212,7 @@ export default function SimToolbar() {
   .no-data { color: #556677; font-style: italic; padding: 16px; }
   .footer { text-align: center; margin-top: 60px; padding-top: 24px; border-top: 1px solid rgba(100,160,255,0.1); color: #556677; font-size: 0.85rem; }
   .footer a { color: #4FC3F7; text-decoration: none; }
+  .summary-box { background: linear-gradient(135deg, rgba(102,187,106,0.08), rgba(255,213,79,0.08)); border: 1px solid rgba(102,187,106,0.25); border-radius: 14px; padding: 28px 32px; font-size: 1.05rem; line-height: 1.9; }
   .decision-card { background: rgba(10,22,40,0.7); border: 1px solid rgba(100,160,255,0.08); border-right: 3px solid #4FC3F7; border-radius: 0 10px 10px 0; padding: 14px 18px; margin-bottom: 10px; }
   .decision-agent { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 </style>
@@ -230,6 +231,16 @@ export default function SimToolbar() {
       <div class="meta-item">📊 ביטחון כולל: <span class="meta-val">${store.globalConfidence}%</span></div>
       <div class="meta-item">💬 הודעות: <span class="meta-val">${store.messages.length}</span></div>
     </div>
+  </div>
+  <div class="section">
+    <div class="section-title"><span class="section-icon">✨</span> סיכום קונצנזוס</div>
+    <div class="summary-box">${store.solutionSummary ? store.solutionSummary
+      .replace(/^### (.+)$/gm, '<h4 style="color:#4FC3F7;margin:12px 0 4px">$1</h4>')
+      .replace(/^## (.+)$/gm, '<h3 style="color:#4FC3F7;margin:14px 0 6px">$1</h3>')
+      .replace(/^# (.+)$/gm, '<h2 style="color:#4FC3F7;margin:16px 0 8px">$1</h2>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#E0E0E0">$1</strong>')
+      .replace(/^- (.+)$/gm, '<li style="margin:2px 0;list-style:disc inside">$1</li>')
+      .replace(/\n/g, '<br/>') : 'טרם הושג קונצנזוס'}</div>
   </div>
   <div class="section">
     <div class="section-title"><span class="section-icon">🧩</span> עמדת כל סוכן</div>

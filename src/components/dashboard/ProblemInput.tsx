@@ -429,7 +429,15 @@ export default function ProblemInput() {
 
   <div class="section">
     <div class="section-title"><span class="section-icon">✨</span> סיכום קונצנזוס</div>
-    <div class="summary-box">${store.solutionSummary ?? 'טרם הושג קונצנזוס — התהליך הופסק לפני הגעה למסקנה.'}</div>
+    <div class="summary-box">${store.solutionSummary
+      ? store.solutionSummary
+        .replace(/^### (.+)$/gm, '<h4 style="color:#4FC3F7;margin:12px 0 4px">$1</h4>')
+        .replace(/^## (.+)$/gm, '<h3 style="color:#4FC3F7;margin:14px 0 6px">$1</h3>')
+        .replace(/^# (.+)$/gm, '<h2 style="color:#4FC3F7;margin:16px 0 8px">$1</h2>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#E0E0E0">$1</strong>')
+        .replace(/^- (.+)$/gm, '<li style="margin:2px 0;list-style:disc inside">$1</li>')
+        .replace(/\n/g, '<br/>')
+      : 'טרם הושג קונצנזוס — התהליך הופסק לפני הגעה למסקנה.'}</div>
   </div>
 
   <div class="section">
