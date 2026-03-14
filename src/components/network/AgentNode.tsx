@@ -1,9 +1,19 @@
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useSimStore } from '../../store/useSimStore';
 import type { AgentDefinition } from '../../agents/agentDefinitions';
+
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < breakpoint);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, [breakpoint]);
+  return isMobile;
+}
 
 interface AgentNodeProps {
   agent: AgentDefinition;
@@ -44,6 +54,7 @@ function OrbitalParticles({ color, count, radius, speed }: {
 }
 
 export default function AgentNode({ agent }: AgentNodeProps) {
+  const isMobile = useIsMobile();
   const coreRef = useRef<THREE.Mesh>(null);
   const wireRef = useRef<THREE.Mesh>(null);
   const shellRef = useRef<THREE.Mesh>(null);
@@ -199,13 +210,14 @@ export default function AgentNode({ agent }: AgentNodeProps) {
         position={[0, 0.75 + confFactor * 0.15, 0]}
         center
         style={{ pointerEvents: 'none', userSelect: 'none' }}
+        className="agent-label-3d"
       >
         <div style={{
           color: agent.color,
           fontFamily: "'Space Grotesk', sans-serif",
-          fontSize: '20px',
+          fontSize: isMobile ? '11px' : '20px',
           fontWeight: 700,
-          letterSpacing: '2px',
+          letterSpacing: isMobile ? '1px' : '2px',
           textShadow: `0 0 12px ${agent.color}, 0 0 30px ${agent.color}60, 0 0 60px ${agent.color}20`,
           whiteSpace: 'nowrap',
           opacity: 0.5 + confFactor * 0.5,
@@ -216,7 +228,7 @@ export default function AgentNode({ agent }: AgentNodeProps) {
           <div style={{
             color: agent.color,
             fontFamily: "'JetBrains Mono', monospace",
-            fontSize: '11px',
+            fontSize: isMobile ? '8px' : '11px',
             textAlign: 'center',
             opacity: 0.4 + confFactor * 0.4,
             marginTop: '2px',

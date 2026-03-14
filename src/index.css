@@ -56,22 +56,41 @@
 
 .main-content {
   flex: 1;
-  display: flex;
+  display: grid;
+  grid-template-columns: 28% 1fr 30%;
+  grid-template-rows: auto 1fr;
   overflow: hidden;
 }
 
+.input-panel {
+  grid-column: 1;
+  grid-row: 1;
+  padding: 10px 10px 0;
+  background: var(--color-bg-surface);
+}
+
+.dashboard-panel {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 10px 10px;
+  overflow: hidden;
+  background: var(--color-bg-surface);
+}
+
 .network-panel {
-  flex: 1 1 0;
+  grid-column: 2;
+  grid-row: 1 / -1;
   min-width: 0;
-  height: 100%;
   position: relative;
   direction: ltr;
-  order: 2;
 }
 
 .stream-panel {
-  width: 30%;
-  height: 100%;
+  grid-column: 3;
+  grid-row: 1 / -1;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -79,20 +98,7 @@
   background: var(--color-bg-surface);
   border-left: 1px solid var(--color-border);
   border-right: 1px solid var(--color-border);
-  order: 1;
   overflow: hidden;
-}
-
-.dashboard-panel {
-  width: 28%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px;
-  overflow: hidden;
-  background: var(--color-bg-surface);
-  order: 0;
 }
 
 /* ============================================================
@@ -1273,4 +1279,342 @@
 .guide-back-btn:hover {
   background: rgba(79, 195, 247, 0.1);
   box-shadow: 0 0 16px rgba(79, 195, 247, 0.2);
+}
+
+/* ============================================================
+   Responsive — Mobile (< 768px)
+   ============================================================ */
+
+@media (max-width: 767px) {
+  html {
+    font-size: 14px;
+  }
+
+  body {
+    overflow: auto;
+    height: auto;
+  }
+
+  .app-shell {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .main-content {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none;
+    overflow: visible;
+  }
+
+  /* Status Bar — compact */
+  .status-bar {
+    padding: 8px 12px;
+    min-height: 44px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .status-bar-left {
+    gap: 8px;
+    max-width: none;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .status-logo {
+    font-size: 1.25rem;
+  }
+
+  .status-dots {
+    display: none;
+  }
+
+  .status-problem {
+    font-size: 0.85rem;
+    max-width: 180px;
+  }
+
+  .status-bar-center {
+    display: none;
+  }
+
+  .status-bar-right {
+    gap: 8px;
+  }
+
+  /* Mobile order: input(0) → stream(1) → 3D(2) → dashboard(3) */
+  .input-panel {
+    width: 100%;
+    order: 0;
+    padding: 8px;
+    flex: none;
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .stream-panel {
+    width: 100%;
+    order: 1;
+    border-left: none;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    padding: 8px;
+    flex: none;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .network-panel {
+    width: 100%;
+    height: 250px;
+    order: 2;
+    flex: none;
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .dashboard-panel {
+    width: 100%;
+    height: auto;
+    order: 3;
+    padding: 8px;
+    overflow: visible;
+    flex: none;
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  /* Thought stream — force visible height */
+  .thought-stream {
+    flex: none;
+    height: auto;
+    max-height: 40vh;
+    min-height: 120px;
+  }
+
+  .thought-stream-list {
+    max-height: 30vh;
+  }
+
+  .thought-entry-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  /* Agent cards — 2 columns, compact */
+  .agent-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    flex: none;
+    height: auto;
+    max-height: 40vh;
+    min-height: 0;
+  }
+
+  .agent-card {
+    min-height: 0;
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .agent-card-name {
+    font-size: 0.9rem;
+    gap: 6px;
+  }
+
+  .agent-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .agent-role {
+    display: none;
+  }
+
+  .agent-thought {
+    font-size: 0.8rem;
+    max-height: 40px;
+    min-height: 0;
+    line-height: 1.4;
+  }
+
+  .agent-interaction {
+    display: none;
+  }
+
+  .agent-confidence-bar {
+    width: 40px;
+  }
+
+  .agent-confidence-value {
+    font-size: 0.8rem;
+    min-width: 32px;
+  }
+
+  /* Learning chart shorter */
+  .learning-chart {
+    height: 140px;
+  }
+
+  .learning-chart-legend {
+    gap: 8px;
+    padding: 4px 12px;
+  }
+
+  .legend-item {
+    font-size: 0.7rem;
+  }
+
+  /* Consensus panel */
+  .consensus-panel {
+    max-height: 120px;
+    padding: 10px 12px;
+  }
+
+  .consensus-event {
+    font-size: 0.9rem;
+  }
+
+  /* Results summary */
+  .results-summary {
+    max-height: 40vh;
+    padding: 12px;
+  }
+
+  /* Problem input */
+  .problem-input-container {
+    padding: 10px 12px;
+  }
+
+  .problem-input-field {
+    font-size: 0.85rem;
+    padding: 10px 12px;
+  }
+
+  .problem-input-buttons {
+    flex-wrap: wrap;
+  }
+
+  .problem-btn {
+    font-size: 0.8rem;
+    padding: 6px 14px;
+  }
+
+  /* Sim toolbar */
+  .sim-toolbar {
+    padding: 8px 10px;
+  }
+
+  /* Consensus explosion */
+  .consensus-symbol {
+    font-size: 3rem;
+  }
+
+  .consensus-title {
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+  }
+
+  .consensus-insight {
+    font-size: 1rem;
+    padding: 0 16px;
+  }
+
+  /* Guide modal — full screen */
+  .guide-modal {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    border-radius: 0;
+  }
+
+  .guide-header {
+    padding: 32px 16px 24px;
+  }
+
+  .guide-logo {
+    font-size: 2.2rem;
+  }
+
+  .guide-subtitle {
+    font-size: 1rem;
+  }
+
+  .guide-section {
+    padding: 20px 16px;
+  }
+
+  .guide-agents-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-ai-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .guide-network-visual {
+    padding: 16px;
+  }
+}
+
+/* ============================================================
+   Responsive — Tablet (768px - 1024px)
+   ============================================================ */
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .main-content {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none;
+    overflow: auto;
+  }
+
+  .input-panel {
+    width: 100%;
+    order: 0;
+    padding: 8px;
+  }
+
+  .stream-panel {
+    width: 100%;
+    height: auto;
+    order: 1;
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .network-panel {
+    width: 100%;
+    height: 400px;
+    order: 2;
+    flex: none;
+  }
+
+  .dashboard-panel {
+    width: 100%;
+    height: auto;
+    order: 3;
+    overflow: visible;
+  }
+
+  .thought-stream {
+    max-height: 50vh;
+  }
+
+  .agent-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .guide-agents-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .guide-ai-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

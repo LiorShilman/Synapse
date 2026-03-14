@@ -19,6 +19,11 @@ export default function AppShell() {
     <div className="app-shell">
       <StatusBar onOpenGuide={() => setShowGuide(true)} />
       <div className="main-content">
+        {/* Problem Input — separate element for mobile reordering */}
+        <div className="input-panel">
+          <ProblemInput />
+        </div>
+
         {/* 3D Network */}
         <div className="network-panel">
           <AgentNetwork3D />
@@ -32,10 +37,8 @@ export default function AppShell() {
           <ResultsSummary />
         </div>
 
-        {/* Dashboard — input, cards, chart */}
+        {/* Dashboard — cards, chart */}
         <div className="dashboard-panel">
-          <ProblemInput />
-
           <div className="agent-cards-grid">
             {AGENTS.map((agent) => (
               <AgentCard key={agent.id} agentId={agent.id} />
