@@ -188,6 +188,80 @@ ${recentMessages}`,
   }
 }
 
+export async function generateConsensusThought(
+  agentId: string,
+  role: 'initiate' | 'coordinate' | 'validate-pass' | 'validate-fail' | 'store'
+): Promise<string> {
+  const store = useSimStore.getState();
+  const agentDef = AGENTS.find((a) => a.id === agentId);
+  if (!agentDef) return 'מעבד...';
+
+  const agentThoughts = AGENTS.map((a) => {
+    const state = store.agents[a.id];
+    return `${a.name} (${a.role}, ביטחון: ${state?.confidence ?? 0}%): ${state?.currentThought ?? 'אין מחשבה'}`;
+  }).join('\n');
+
+  const roleInstructions: Record<string, string> = {
+    'initiate': 'אתה יוזם בדיקת קונצנזוס. סכם בקצרה את מצב הדיון וקרא לסוכנים האחרים להגיש את התובנות שלהם. התייחס לבעיה הספציפית ולנקודות שעלו.',
+    'coordinate': 'אתה מרכז את תהליך הקונצנזוס. תאר אילו נקודות הסכמה ומחלוקת אתה רואה בין הסוכנים, והתייחס לבעיה הספציפית.',
+    'validate-pass': 'אתה מאמת את הקונצנזוס. בדוק את הלוגיקה של הטיעונים שהועלו ואשר שהם עומדים בביקורת. ציין נקודות חוזק ספציפיות.',
+    'validate-fail': 'אתה מאמת את הקונצנזוס ומצאת שעדיין לא הושג. ציין מה עדיין חסר או לא עקבי בטיעונים, והתייחס לנקודות ספציפיות.',
+    'store': 'אתה שומר את הקונצנזוס בזיכרון הקולקטיבי. סכם את התובנה המרכזית שהושגה והסבר למה היא חשובה.',
+  };
+
+  if (!(store.isApiMode && store.mode === 'solving')) {
+    // Simulation mode fallback
+    const fallbacks: Record<string, string> = {
+      'initiate': `בדיקת קונצנזוס: סוקר את מצב הדיון בנושא ${store.currentProblem}`,
+      'coordinate': `מרכז תובנות: מזהה נקודות הסכמה בין הסוכנים בנושא ${store.currentProblem}`,
+      'validate-pass': `אימות לוגי הושלם ✓ — הטיעונים עקביים ומבוססים`,
+      'validate-fail': `אימות לוגי: סף הביטחון טרם הושג — נדרש דיון נוסף`,
+      'store': `שומר קונצנזוס: התובנות בנושא ${store.currentProblem} נשמרו בזיכרון הקולקטיבי`,
+    };
+    return fallbacks[role] ?? 'מעבד...';
+  }
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': import.meta.env.VITE_ANTHROPIC_API_KEY as string,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        system: `אתה ${agentDef.name}, סוכן AI המתמחה ב${agentDef.role}.
+${roleInstructions[role]}
+
+הבעיה הנוכחית: ${store.currentProblem}
+
+הנחיות:
+- ענה תמיד בעברית תקנית
+- תגובה של 1-2 משפטים מקסימום
+- התייחס לתוכן הספציפי של הדיון, לא במשפטים גנריים`,
+        messages: [
+          {
+            role: 'user',
+            content: `מצב הסוכנים כרגע:\n${agentThoughts}`,
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      return roleInstructions[role] ?? 'מעבד...';
+    }
+
+    const data = await response.json();
+    return data.content[0].text;
+  } catch {
+    return roleInstructions[role] ?? 'מעבד...';
+  }
+}
+
 export async function generateThought(
   agentId: string,
   context: { currentProblem: string; otherAgentIds: string[] }

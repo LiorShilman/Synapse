@@ -1,5 +1,5 @@
 import { AGENTS } from './agentDefinitions';
-import { generateThought, getThoughtCategory, generateConsensusSummary } from '../hooks/useAgentThought';
+import { generateThought, getThoughtCategory, generateConsensusSummary, generateConsensusThought } from '../hooks/useAgentThought';
 import { useSimStore } from '../store/useSimStore';
 
 function pickWeightedAgent(): string {
@@ -110,8 +110,8 @@ async function executeTick() {
   // Increment tick
   store.incrementTick();
 
-  // Consensus check every 8 ticks
-  if (store.tickCount > 0 && store.tickCount % 8 === 0) {
+  // Consensus check every 8 ticks (only after at least 8 ticks of real discussion)
+  if (store.tickCount >= 8 && store.tickCount % 8 === 0) {
     triggerConsensusCheck();
   }
 }
@@ -122,23 +122,25 @@ async function triggerConsensusCheck() {
   const allAbove70 = agents.every((a) => a.confidence > 70);
   const isRealMode = store.isApiMode && store.mode === 'solving';
 
-  // סייג׳ יוזם
-  store.setAgentThought('sage', 'מבקש סינתזה קולקטיבית... כל הסוכנים, הגישו את התובנה ברמת הביטחון הגבוהה ביותר');
+  // סייג׳ יוזם — contextual message
+  const sageThought = await generateConsensusThought('sage', 'initiate');
+  store.setAgentThought('sage', sageThought);
   store.addMessage({
     fromId: 'sage',
     toId: 'nexus',
-    text: 'מבקש סינתזה קולקטיבית... כל הסוכנים, הגישו את התובנה ברמת הביטחון הגבוהה ביותר',
+    text: sageThought,
     category: 'synthesis',
   });
 
-  setTimeout(() => {
+  setTimeout(async () => {
     const s = useSimStore.getState();
-    // נקסוס מרכז
-    s.setAgentThought('nexus', `קונצנזוס מתגבש בנושא: ${s.currentProblem}`);
+    // נקסוס מרכז — contextual message
+    const nexusThought = await generateConsensusThought('nexus', 'coordinate');
+    s.setAgentThought('nexus', nexusThought);
     s.addMessage({
       fromId: 'nexus',
       toId: 'cipher',
-      text: `קונצנזוס מתגבש בנושא: ${s.currentProblem}`,
+      text: nexusThought,
       category: 'synthesis',
     });
   }, 1000);
@@ -146,17 +148,19 @@ async function triggerConsensusCheck() {
   setTimeout(async () => {
     const s = useSimStore.getState();
     if (allAbove70) {
-      // סייפר מאמת
-      s.setAgentThought('cipher', 'לוגיקה אומתה ✓ — כל הטענות עומדות תחת בחינה');
+      // סייפר מאמת — contextual message
+      const cipherThought = await generateConsensusThought('cipher', 'validate-pass');
+      s.setAgentThought('cipher', cipherThought);
       s.addMessage({
         fromId: 'cipher',
         toId: 'echo',
-        text: 'לוגיקה אומתה ✓ — כל הטענות עומדות תחת בחינה',
+        text: cipherThought,
         category: 'insight',
       });
 
-      // אקו שומר
-      s.setAgentThought('echo', 'שומר קונצנזוס בזיכרון הקולקטיבי — זו כעת אמת יסוד');
+      // אקו שומר — contextual message
+      const echoThought = await generateConsensusThought('echo', 'store');
+      s.setAgentThought('echo', echoThought);
 
       // אירוע קונצנזוס
       s.addConsensusEvent(
@@ -196,11 +200,13 @@ async function triggerConsensusCheck() {
         if (active) latest.dismissConsensus(active.id);
       }, 4000);
     } else {
-      s.setAgentThought('cipher', 'אנומליה זוהתה ✗ — סף הביטחון טרם הושג');
+      // סייפר — contextual failure message
+      const cipherFail = await generateConsensusThought('cipher', 'validate-fail');
+      s.setAgentThought('cipher', cipherFail);
       s.addMessage({
         fromId: 'cipher',
         toId: 'sage',
-        text: 'אנומליה זוהתה ✗ — ביטחון קולקטיבי לא מספיק לקונצנזוס',
+        text: cipherFail,
         category: 'challenge',
       });
     }
