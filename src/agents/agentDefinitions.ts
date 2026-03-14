@@ -35,7 +35,7 @@ export const AGENTS: AgentDefinition[] = [
     id: 'forge',
     name: 'פורג׳',
     role: 'יצירת פתרונות',
-    description: 'ממזג תשומות לפתרונות מעשיים',
+    description: 'ממזג רעיונות לפתרונות מעשיים',
     color: '#FFAB40',
     glowColor: '#E65100',
     position: [-2.2, 0.5, 1.8],

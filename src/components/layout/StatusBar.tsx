@@ -1,6 +1,10 @@
 import { useSimStore } from '../../store/useSimStore';
 
-export default function StatusBar() {
+interface StatusBarProps {
+  onOpenGuide: () => void;
+}
+
+export default function StatusBar({ onOpenGuide }: StatusBarProps) {
   const tickCount = useSimStore((s) => s.tickCount);
   const startTime = useSimStore((s) => s.startTime);
   const globalConfidence = useSimStore((s) => s.globalConfidence);
@@ -55,6 +59,14 @@ export default function StatusBar() {
       </div>
       <div className="status-bar-left">
         <span className="status-problem">{currentProblem}</span>
+        <button
+          type="button"
+          className="guide-toggle"
+          onClick={onOpenGuide}
+          title="מדריך למשתמש"
+        >
+          ?
+        </button>
       </div>
     </div>
   );

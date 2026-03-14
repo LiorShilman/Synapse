@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { AGENTS } from '../../agents/agentDefinitions';
 import AgentNetwork3D from '../network/AgentNetwork3D';
 import AgentCard from '../dashboard/AgentCard';
@@ -8,11 +9,18 @@ import ProblemInput from '../dashboard/ProblemInput';
 import ResultsSummary from '../dashboard/ResultsSummary';
 import StatusBar from './StatusBar';
 import ConsensusExplosion from '../events/ConsensusExplosion';
+import GuidePage from '../guide/GuidePage';
 
 export default function AppShell() {
+  const [showGuide, setShowGuide] = useState(false);
+
+  if (showGuide) {
+    return <GuidePage onClose={() => setShowGuide(false)} />;
+  }
+
   return (
     <div className="app-shell">
-      <StatusBar />
+      <StatusBar onOpenGuide={() => setShowGuide(true)} />
       <div className="main-content">
         {/* 3D Network */}
         <div className="network-panel">
