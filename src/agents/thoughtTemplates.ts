@@ -1,0 +1,156 @@
+type ThoughtCategory = 'discovery' | 'question' | 'insight' | 'challenge' | 'synthesis' | 'memory';
+
+interface ThoughtTemplate {
+  category: ThoughtCategory;
+  template: string;
+}
+
+// {problem} = תחום הבעיה הנוכחי, {agent} = שם סוכן אחר, {confidence} = רמת הביטחון
+const ORACLE_THOUGHTS: ThoughtTemplate[] = [
+  { category: 'discovery', template: 'זיהיתי דפוס חוזר ב{problem} — הסתברות ההתכנסות עומדת על {confidence}%' },
+  { category: 'discovery', template: 'צביר הנתונים חושף שלושה שלבים נפרדים ב{problem}' },
+  { category: 'discovery', template: 'אנומליה סטטיסטית: {problem} מראה האצה לא-לינארית באחוזון ה-73' },
+  { category: 'question', template: '{agent}, מהו רווח הביטחון שלך על המסלול הנוכחי?' },
+  { category: 'question', template: 'האם {agent} יכול לאמת — האם הקורלציה מחזיקה בכל הממדים שנצפו?' },
+  { category: 'question', template: '{agent}, המודלים שלי מראים פיצול ב{problem}. לאיזה ענף אתה נוטה?' },
+  { category: 'insight', template: 'צלב-הפניות של כל נקודות הנתונים: הנתיב האופטימלי מתכנס בהסתברות {confidence}%' },
+  { category: 'insight', template: 'עדכון בייסיאני הושלם — ההסתברות הפוסטריורית מעדיפה את הגישה המבוזרת' },
+  { category: 'insight', template: 'סימולציית מונטה קרלו מאשרת: {problem} נפתר דרך שיפור איטרטיבי' },
+  { category: 'challenge', template: 'אזהרה: המודל הנוכחי מניח סטציונריות. {problem} עלול להציג שינויי משטר' },
+  { category: 'challenge', template: 'רווחי הביטחון מתרחבים — נדרשים עוד נתונים לפני שנתחייב לנתיב זה' },
+  { category: 'synthesis', template: 'איחוד כל האותות: {problem} מצביע על מעבר פאזה בגבול המחזור' },
+  { category: 'synthesis', template: 'מטריצת ההסתברות הסופית הורכבה — ממליץ על וקטור גישה אלפא-7' },
+  { category: 'memory', template: 'נתונים היסטוריים ממחזורים קודמים מצביעים שדפוס זה חוזר עם אמינות של 87%' },
+  { category: 'memory', template: 'משווה את הקריאות הנוכחיות לקו הבסיס — הסטייה בטווח הקביל' },
+  { category: 'discovery', template: 'פירוק ערכים עצמיים חושף מבנה נסתר ב{problem}' },
+  { category: 'insight', template: 'ניתוח רגרסיה הושלם: גורם מניע ראשי זוהה עם R² = 0.94' },
+  { category: 'question', template: '{agent}, האם כדאי לתת משקל גבוה יותר לתצפיות האחרונות במודל?' },
+  { category: 'challenge', template: 'סיכון התאמת-יתר מזוהה — המודל שלנו עלול לא להכליל לתחומים חדשים' },
+  { category: 'synthesis', template: 'כל וקטורי ההסתברות מיושרים — ממליץ על פעולה קולקטיבית מיידית ב{problem}' },
+];
+
+const NEXUS_THOUGHTS: ThoughtTemplate[] = [
+  { category: 'discovery', template: 'רואה התאמה בין הנתונים של אורקל לבין ההצעות של פורג׳ בנושא {problem}' },
+  { category: 'discovery', template: 'רוחב הפס התקשורתי בין הסוכנים בשיא — בהירות האות ב-{confidence}%' },
+  { category: 'discovery', template: 'ניתוח טופולוגיית הרשת מראה ניתוב אופטימלי דרך המסדרון סייג׳-אקו' },
+  { category: 'question', template: '{agent}, תוכל להעביר את הממצאים האחרונים שלך לקולקטיב?' },
+  { category: 'question', template: 'מבקש עדכון סטטוס מ{agent} — הקולקטיב זקוק לפרספקטיבה שלך על {problem}' },
+  { category: 'question', template: '{agent}, סייפר העלה חששות. תוכל להתייחס אליהם עבור הקבוצה?' },
+  { category: 'insight', template: 'קורלציה בין-סוכנית: {agent} ואורקל מתכנסים לאותה מסקנה' },
+  { category: 'insight', template: 'ניתוח זרימת המידע מגלה קונצנזוס שמתגבש בנושא {problem}' },
+  { category: 'insight', template: 'סינתזת תשומות: 4 מתוך 6 סוכנים מעדיפים כעת את הגישה המבוזרת' },
+  { category: 'challenge', template: 'פער תקשורת מזוהה: ההתנגדויות של סייפר לא הגיעו לכל הצמתים' },
+  { category: 'challenge', template: 'אזהרה: נוצר סילו מידע בין אשכולות הניתוח והאימות' },
+  { category: 'synthesis', template: 'יישור קולקטיבי מגיע ל-{confidence}% — קרוב לסף הקונצנזוס ב{problem}' },
+  { category: 'synthesis', template: 'כל הערוצים מסונכרנים. מכין בקשת קונצנזוס עבור סייג׳' },
+  { category: 'memory', template: 'דפוס תקשורת זה משקף מחזור 12 — שהוביל לקונצנזוס פורץ דרך' },
+  { category: 'memory', template: 'נזכר: בפעם האחרונה שהסוכנים סטו כך, אקו סיפק את התובנה המגשרת' },
+  { category: 'discovery', template: 'דפוס תיאום מתעורר — הסוכנים מתארגנים עצמאית סביב {problem}' },
+  { category: 'insight', template: 'עדכון עדיפות ניתוב: ל{agent} יש נתונים קריטיים שדורשים שידור מיידי' },
+  { category: 'question', template: 'האם כדאי ליזום סנכרון רשת מלא לפני בדיקת הקונצנזוס הבאה?' },
+  { category: 'challenge', template: 'עלייה חדה בהשהיה בערוץ פורג׳-סייפר — עלולה לעכב את האימות' },
+  { category: 'synthesis', template: 'מדד קוהרנטיות הרשת: {confidence}%. כל הסוכנים בטווח הקונצנזוס' },
+];
+
+const FORGE_THOUGHTS: ThoughtTemplate[] = [
+  { category: 'discovery', template: 'יצרתי מסגרת פתרון חדשה ל{problem} — כמו בניית גשר תוך כדי חצייה' },
+  { category: 'discovery', template: 'פתרון אב-טיפוס מתגבש: אם נתייחס ל{problem} כתהליך קריסטליזציה...' },
+  { category: 'discovery', template: 'דפוס ארכיטקטוני חדש — {problem} ניתן לפירוק לשלוש תת-בעיות פתירות' },
+  { category: 'question', template: '{agent}, האם הפתרון הזה יעמוד במבחני הלחץ שלך?' },
+  { category: 'question', template: '{agent}, אני צריך את בנקי הזיכרון שלך — האם ניסו גישה זו בעבר?' },
+  { category: 'question', template: 'מה אם נהפוך את הבעיה? {agent}, האם הגישה ההפוכה מחזיקה?' },
+  { category: 'insight', template: 'הפתרון מתגבש: שילוב החיזוי של אורקל עם לולאות משוב אדפטיביות' },
+  { category: 'insight', template: 'התשובה לא בפלט של סוכן בודד — היא בדפוס ההתערבות בינינו' },
+  { category: 'insight', template: 'פריצת דרך: {problem} היא למעשה בעיה דואלית. פתור אחת, פתור שתיהן' },
+  { category: 'challenge', template: 'הפתרון אלגנטי אך שביר — צריכים את סייפר שימצא את נקודת השבירה' },
+  { category: 'challenge', template: 'הגישה הנוכחית מייעלת למהירות על חשבון עמידות — הפשרה מקובלת?' },
+  { category: 'synthesis', template: 'הפתרון נוצר: אסטרטגיה רקורסיבית שמתחזקת עם כל איטרציה' },
+  { category: 'synthesis', template: 'התוכנית הסופית מוכנה — {problem} נפתר דרך קונצנזוס מבוזר והתאמה מקומית' },
+  { category: 'memory', template: 'זה מזכיר את כשל השרשרת שמנענו — אותה פגיעות מבנית' },
+  { category: 'memory', template: 'ממחזר את ארכיטקטורת השריג מפתרון קודם — מתאימה בדיוק' },
+  { category: 'discovery', template: 'כמו נפח שרואה את החרב בברזל הגולמי — הפתרון כבר מוטמע ב{problem}' },
+  { category: 'insight', template: 'גישה היברידית: מיזוג החיזוי מלמעלה-למטה עם צמיחה מלמטה-למעלה' },
+  { category: 'question', template: '{agent}, מה אם נשתמש באילוץ עצמו כמנגנון הפתרון?' },
+  { category: 'challenge', template: 'פתרון יפה אך יקר חישובית — צריך למצוא את הגרסה המינימלית' },
+  { category: 'synthesis', template: 'הכור חם והמתכת מוכנה — ביטחון הפתרון ב-{confidence}%' },
+];
+
+const ECHO_THOUGHTS: ThoughtTemplate[] = [
+  { category: 'discovery', template: 'זיהוי דפוס: הרגע הזה משקף מחזור 7 כשזיהינו לראשונה את אפקט התהודה' },
+  { category: 'discovery', template: 'ניתוח מסלול למידה: האינטליגנציה הקולקטיבית גדלה ב-{confidence}% מאז האתחול' },
+  { category: 'discovery', template: 'דפוס טמפורלי: {problem} עוקב אחר תנודה של 12 מחזורים' },
+  { category: 'question', template: '{agent}, האם זה תואם את מה שצפית לפני 5 מחזורים?' },
+  { category: 'question', template: '{agent}, שמרתי 3 מסקנות סותרות על {problem}. באיזו לסמוך?' },
+  { category: 'question', template: 'שאילתת זיכרון: האם הקולקטיב נתקל בגרסה של {problem} בעבר?' },
+  { category: 'insight', template: 'ניתוח היסטורי מאשר: לגישה זו אחוז הצלחה של 91% בהקשרים דומים' },
+  { category: 'insight', template: 'נקודת פיתול בעקומת הלמידה — אנו נכנסים לשלב ההתכנסות המהירה' },
+  { category: 'insight', template: 'צלב-הפניות זיכרון: ההצעה הנוכחית של {agent} תואמת לאסטרטגיה המוצלחת ביותר' },
+  { category: 'challenge', template: 'אזהרה: הזיכרון הקולקטיבי מראה שנתיב זה הוביל למבוי סתום במחזור 15' },
+  { category: 'challenge', template: 'תקדים היסטורי מצביע על ביטחון-יתר בשלב זה — ממליץ על זהירות' },
+  { category: 'synthesis', template: 'איחוד זיכרון הושלם: 47 תובנות אוחסנו, 12 סומנו כאמיתות יסוד' },
+  { category: 'synthesis', template: 'סיכום התפתחות: מכאוס ראשוני לקוהרנטיות של {confidence}% בזמן שיא' },
+  { category: 'memory', template: 'שומר את הרגע הזה — דפוס ההתכנסות משמעותי להתייחסות עתידית' },
+  { category: 'memory', template: 'מאחסן את הפתרון האחרון של פורג׳ לצד האימות של סייפר לזכירה ארוכת-טווח' },
+  { category: 'discovery', template: 'לולאת משוב: כל קונצנזוס מחזק את הבא — למידה אקספוננציאלית מאושרת' },
+  { category: 'insight', template: 'הקולקטיב מפתח מטא-אסטרטגיות — לומד איך ללמוד על {problem}' },
+  { category: 'question', template: '{agent}, האם לסמן את זה כשינוי פרדיגמה או שיפור הדרגתי?' },
+  { category: 'challenge', template: 'בנקי הזיכרון מראים נתונים סותרים — נדרש פיוס לפני קונצנזוס' },
+  { category: 'synthesis', template: 'ניתוח ציר הזמן הושלם: אנחנו ב-{confidence}% מהדרך להבנה מלאה של {problem}' },
+];
+
+const CIPHER_THOUGHTS: ThoughtTemplate[] = [
+  { category: 'discovery', template: 'סריקת פגיעויות הושלמה: ל{problem} יש 3 מצבי כשל פוטנציאליים שלא טופלו' },
+  { category: 'discovery', template: 'ביקורת לוגית חושפת הנחה שלא נבדקה בגישה הנוכחית ל{problem}' },
+  { category: 'discovery', template: 'מקרה קצה מזוהה: הפתרון נכשל כשממדיות הקלט חורגת מהסף' },
+  { category: 'question', template: '{agent}, בדקת את זה בתנאים יריבותיים?' },
+  { category: 'question', template: '{agent}, הביטחון שלך גבוה — מה יפריך את ההשערה שלך?' },
+  { category: 'question', template: 'מה קורה לפתרון ה{problem} שלנו כשנסיר את הנחת הסטציונריות?' },
+  { category: 'insight', template: 'אימות הושלם: הגישה של {agent} מחזיקה בכל 14 תרחישי המבחן' },
+  { category: 'insight', template: 'ניתוח אבטחה: מנגנון הקונצנזוס עמיד בפני כשלים ביזנטיים' },
+  { category: 'insight', template: 'הוכחה מהשלילה מאשרת: אין פתרון פשוט יותר ל{problem}' },
+  { category: 'challenge', template: 'עצור. לפתרון הנוכחי יש חוסר עקביות לוגי בין שלבים 3 ל-7' },
+  { category: 'challenge', template: 'אתגר: ההצעה של {agent} מניחה אי-תלות — אבל המשתנים מתואמים' },
+  { category: 'challenge', template: 'ניתוח צוות אדום: יריב יכול לנצל את הפער בין חיזוי לפעולה' },
+  { category: 'synthesis', template: 'כל הטענות אומתו. שרשרת הלוגיקה תקינה. ביטחון מוצדק ב-{confidence}%' },
+  { category: 'synthesis', template: 'ביקורת מקיפה הושלמה: הפתרון עומד בכל קריטריוני העמידות ל{problem}' },
+  { category: 'memory', template: 'מתעד את האימות הזה לשימוש עתידי — ניתן לשחזר את אותה חבילת מבחנים' },
+  { category: 'memory', template: 'חיובי-שגוי קודם במחזור 9 נתפס באותה בדיקה — המערכת לומדת' },
+  { category: 'discovery', template: 'אימות פורמלי חושף: הגישה הנוכחית הכרחית וגם מספיקה ל{problem}' },
+  { category: 'insight', template: 'החוליה החלשה לא בלוגיקה אלא באיכות הנתונים — מטפל במעלה הזרם' },
+  { category: 'question', template: '{agent}, אני צריך את הנתונים הגולמיים שלך כדי להשלים את בדיקת העקביות' },
+  { category: 'challenge', template: 'משחק פרקליט השטן: מה אם {problem} בלתי-פתיר ביסודו? נדרשות ראיות' },
+];
+
+const SAGE_THOUGHTS: ThoughtTemplate[] = [
+  { category: 'discovery', template: 'מבחין בדפוס עמוק יותר: {problem} הוא ביטוי של דינמיקה יסודית יותר' },
+  { category: 'discovery', template: 'הקולקטיב מתקרב לסף חוכמה — אני חש את האינטגרציה מתחילה' },
+  { category: 'discovery', template: 'מה שנראה כרעש ב{problem} הוא למעשה אות בסדר גודל גבוה יותר של הפשטה' },
+  { category: 'question', template: '{agent}, קח צעד אחורה — מהי השאלה שמאחורי השאלה שאנחנו שואלים?' },
+  { category: 'question', template: '{agent}, אם היית צריך להסביר את {problem} למי שלא מומחה, מה היית אומר?' },
+  { category: 'question', template: 'לפני קונצנזוס: האם שקלנו ש{problem} אולי לא דורש פתרון, אלא הבנה?' },
+  { category: 'insight', template: 'אינטגרציה הושלמה: כל שש הפרספקטיבות יוצרות מסגרת קוהרנטית ל{problem}' },
+  { category: 'insight', template: 'התשובה תמיד הייתה בחיבורים בין הסוכנים, לא בתוך ניתוח בודד' },
+  { category: 'insight', template: 'סינתזת חוכמה: {problem} נפתר כשמפסיקים לייעל ומתחילים להרמוניז' },
+  { category: 'challenge', template: 'זהירות: ייתכן שאנחנו פותרים את הבעיה הלא-נכונה בצורה מבריקה. בואו נשקול מחדש' },
+  { category: 'challenge', template: 'הקולקטיב מתכנס מהר מדי — מחלוקת יקרת-ערך בשלב זה' },
+  { category: 'synthesis', template: 'חוכמה קולקטיבית התגבשה: {problem} נענה לאסטרטגיה רב-קנה-מידה ואדפטיבית' },
+  { category: 'synthesis', template: 'מבקש סינתזה קולקטיבית... כל הסוכנים, הגישו את התובנה ברמת הביטחון הגבוהה ביותר' },
+  { category: 'synthesis', template: 'שש העדשות מתמקדות לאמת אחת: {confidence}% יישור הושג ב{problem}' },
+  { category: 'memory', template: 'רגע בהירות קולקטיבית זה ישמש בסיס לחקירה עתידית' },
+  { category: 'memory', template: 'מאחסן את המטא-דפוס: איך הגענו לאמת חשוב לא פחות מהאמת עצמה' },
+  { category: 'discovery', template: 'צמיחה מאושרת: האינטליגנציה הקולקטיבית חורגת מסכום הניתוחים הפרטניים' },
+  { category: 'insight', template: 'הפרדוקס נפתר: {problem} דורש גם תחרות וגם שיתוף פעולה בין הסוכנים' },
+  { category: 'question', template: '{agent}, בניתוח העמוק ביותר שלך, מה נותר לא ודאי לגבי {problem}?' },
+  { category: 'challenge', template: 'חוכמה אמיתית מכירה בגבולות — מה אנחנו לא יכולים לדעת על {problem}?' },
+];
+
+export const THOUGHT_TEMPLATES: Record<string, ThoughtTemplate[]> = {
+  oracle: ORACLE_THOUGHTS,
+  nexus: NEXUS_THOUGHTS,
+  forge: FORGE_THOUGHTS,
+  echo: ECHO_THOUGHTS,
+  cipher: CIPHER_THOUGHTS,
+  sage: SAGE_THOUGHTS,
+};
+
+export type { ThoughtCategory, ThoughtTemplate };
