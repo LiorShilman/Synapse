@@ -7,6 +7,7 @@ import LearningChart from '../dashboard/LearningChart';
 import ConsensusPanel from '../dashboard/ConsensusPanel';
 import ProblemInput from '../dashboard/ProblemInput';
 import ResultsSummary from '../dashboard/ResultsSummary';
+import SimToolbar from '../dashboard/SimToolbar';
 import StatusBar from './StatusBar';
 import ConsensusExplosion from '../events/ConsensusExplosion';
 import GuidePage from '../guide/GuidePage';
@@ -23,12 +24,15 @@ export default function AppShell() {
           <AgentNetwork3D />
         </div>
 
-        {/* Thought Stream — full-height middle column */}
+        {/* Thought Stream + Consensus/Results at bottom */}
         <div className="stream-panel">
           <ThoughtStream />
+          <ConsensusPanel />
+          <SimToolbar />
+          <ResultsSummary />
         </div>
 
-        {/* Dashboard — input, cards, chart, consensus, results */}
+        {/* Dashboard — input, cards, chart */}
         <div className="dashboard-panel">
           <ProblemInput />
 
@@ -39,10 +43,6 @@ export default function AppShell() {
           </div>
 
           <LearningChart />
-
-          <ConsensusPanel />
-
-          <ResultsSummary />
         </div>
       </div>
 

@@ -12,7 +12,7 @@ export default function ThoughtStream() {
       <div className="thought-stream-header">זרם מחשבות</div>
       <div className="thought-stream-list" ref={containerRef}>
         <AnimatePresence initial={false}>
-          {messages.slice(0, 30).map((msg) => {
+          {messages.map((msg) => {
             const isUserMsg = msg.fromId === 'user';
             const sender = AGENTS.find((a) => a.id === msg.fromId);
             const receiver = AGENTS.find((a) => a.id === msg.toId);

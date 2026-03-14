@@ -70,15 +70,17 @@
 }
 
 .stream-panel {
-  width: 22%;
+  width: 30%;
   height: 100%;
   display: flex;
   flex-direction: column;
+  gap: 8px;
   padding: 8px 4px 8px 8px;
   background: var(--color-bg-surface);
   border-left: 1px solid var(--color-border);
   border-right: 1px solid var(--color-border);
   order: 1;
+  overflow: hidden;
 }
 
 .dashboard-panel {
@@ -111,7 +113,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  max-width: 500px;
+  max-width: 650px;
 }
 
 .status-bar-right {
@@ -159,7 +161,7 @@
 
 .status-problem {
   color: var(--color-text-secondary);
-  font-size: 0.875rem;
+  font-size: 1.3rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -173,6 +175,12 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 160, 255, 0.2) transparent;
 }
 
 .agent-card {
@@ -246,12 +254,16 @@
 }
 
 .agent-thought {
-  font-size: 0.875rem;
+  font-size: 1.3rem;
   color: var(--color-text-secondary);
   line-height: 1.6;
   min-height: 42px;
+  max-height: 80px;
+  overflow-y: auto;
   font-style: italic;
   opacity: 0.9;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 160, 255, 0.15) transparent;
 }
 
 .agent-interaction {
@@ -286,8 +298,24 @@
 
 .thought-stream-list {
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 0 16px 12px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 160, 255, 0.2) transparent;
+}
+.thought-stream-list::-webkit-scrollbar {
+  width: 6px;
+}
+.thought-stream-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thought-stream-list::-webkit-scrollbar-thumb {
+  background: rgba(100, 160, 255, 0.2);
+  border-radius: 3px;
+}
+.thought-stream-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 160, 255, 0.35);
 }
 
 .thought-entry {
@@ -301,7 +329,7 @@
 }
 
 .thought-entry-text {
-  font-size: 0.875rem;
+  font-size: 1.3rem;
   color: var(--color-text-secondary);
   line-height: 1.6;
   font-style: italic;
@@ -323,8 +351,8 @@
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: 10px;
-  flex: 1 1 0;
-  min-height: 0;
+  height: 220px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -373,6 +401,8 @@
   min-height: 100px;
   padding: 0 8px 8px;
   direction: ltr;
+  background: linear-gradient(180deg, rgba(3,8,18,0.6) 0%, rgba(10,22,40,0.3) 100%);
+  border-radius: 0 0 8px 8px;
 }
 
 .learning-chart-svg-wrapper svg {
@@ -399,6 +429,11 @@
   border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 14px 16px;
+  max-height: 180px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 160, 255, 0.2) transparent;
 }
 
 .consensus-panel-header {
@@ -434,7 +469,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  font-size: 0.875rem;
+  font-size: 1.3rem;
   color: var(--color-text-secondary);
   padding: 6px 0;
 }
@@ -676,10 +711,81 @@
   background: rgba(239, 83, 80, 0.1);
 }
 
+.problem-btn-stop {
+  background: transparent;
+  border-color: rgba(255, 171, 64, 0.3);
+  color: #FFAB40;
+}
+.problem-btn-stop:hover {
+  border-color: #FFAB40;
+  background: rgba(255, 171, 64, 0.1);
+}
+
+.problem-btn-resume {
+  background: transparent;
+  border-color: rgba(102, 187, 106, 0.3);
+  color: #66BB6A;
+}
+.problem-btn-resume:hover {
+  border-color: #66BB6A;
+  background: rgba(102, 187, 106, 0.1);
+}
+
+.problem-btn-save {
+  background: transparent;
+  border-color: rgba(79, 195, 247, 0.3);
+  color: #4FC3F7;
+  min-width: 36px;
+  padding: 6px 8px;
+  font-size: 1rem;
+}
+.problem-btn-save:hover {
+  border-color: #4FC3F7;
+  background: rgba(79, 195, 247, 0.1);
+}
+
+.problem-question-box {
+  background: rgba(255, 171, 64, 0.08);
+  border: 1px solid rgba(255, 171, 64, 0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.9375rem;
+  color: #FFCC80;
+  line-height: 1.6;
+}
+
 .problem-input-hint {
   font-size: 0.8125rem;
   color: #66BB6A;
   font-style: italic;
+}
+
+/* ============================================================
+   Simulation Toolbar (save in sim mode)
+   ============================================================ */
+
+.sim-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(102, 187, 106, 0.06);
+  border: 1px solid rgba(102, 187, 106, 0.2);
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.sim-toolbar-text {
+  flex: 1;
+  font-size: 0.875rem;
+  color: #66BB6A;
+  font-weight: 600;
+}
+
+.sim-toolbar .problem-btn-save {
+  font-size: 0.8125rem;
+  padding: 6px 14px;
+  min-width: auto;
 }
 
 /* ============================================================
@@ -695,8 +801,11 @@
   flex-direction: column;
   gap: 12px;
   box-shadow: 0 0 20px rgba(79, 195, 247, 0.08);
-  max-height: 40vh;
+  max-height: 30vh;
+  flex-shrink: 0;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 160, 255, 0.2) transparent;
 }
 
 .results-header {

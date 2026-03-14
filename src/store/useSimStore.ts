@@ -50,6 +50,9 @@ interface SimState {
   isApiMode: boolean;
   solutionSummary: string | null;
   isSolving: boolean;
+  simPaused: boolean;
+  pendingQuestion: string | null;
+  noMoreQuestions: boolean;
 
   // Actions
   setAgentThinking: (id: string, thinking: boolean) => void;
@@ -69,10 +72,14 @@ interface SimState {
   setUserProblem: (problem: string) => void;
   startSolving: () => void;
   stopSolving: () => void;
+  pauseSolving: () => void;
+  resumeSolving: () => void;
   setSolutionSummary: (summary: string | null) => void;
   setApiMode: (enabled: boolean) => void;
   resetForNewProblem: () => void;
   sendUserFeedback: (feedback: string) => void;
+  setSimPaused: (paused: boolean) => void;
+  setPendingQuestion: (question: string | null) => void;
 }
 
 const initAgents = (): Record<string, AgentState> => {
@@ -109,6 +116,9 @@ export const useSimStore = create<SimState>((set) => ({
   isApiMode: false,
   solutionSummary: null,
   isSolving: false,
+  simPaused: false,
+  pendingQuestion: null,
+  noMoreQuestions: false,
 
   setAgentThinking: (id, thinking) =>
     set((s) => ({
@@ -136,7 +146,7 @@ export const useSimStore = create<SimState>((set) => ({
         id: `msg-${++messageId}`,
         timestamp: Date.now(),
       };
-      const messages = [newMsg, ...s.messages].slice(0, 50);
+      const messages = [newMsg, ...s.messages];
       return { messages };
     }),
 
@@ -219,14 +229,17 @@ export const useSimStore = create<SimState>((set) => ({
   // Phase 2 actions
   setUserProblem: (problem) => set({ userProblem: problem }),
 
+  pauseSolving: () => set({ isSolving: false }),
+  resumeSolving: () => set({ isSolving: true }),
+
   startSolving: () =>
     set((s) => {
-      // Reset agents for new problem
+      // Reset agents for new problem — start at 0% confidence
       const agents = { ...s.agents };
       for (const id of Object.keys(agents)) {
         agents[id] = {
           ...agents[id],
-          confidence: 20 + Math.floor(Math.random() * 20),
+          confidence: 0,
           currentThought: '',
           isThinking: false,
           confidenceHistory: [],
@@ -244,6 +257,8 @@ export const useSimStore = create<SimState>((set) => ({
         consensusEvents: [],
         globalConfidence: 0,
         solutionSummary: null,
+        pendingQuestion: null,
+        noMoreQuestions: false,
       };
     }),
 
@@ -251,7 +266,65 @@ export const useSimStore = create<SimState>((set) => ({
 
   setSolutionSummary: (summary) => set({ solutionSummary: summary }),
 
-  setApiMode: (enabled) => set({ isApiMode: enabled }),
+  setApiMode: (enabled) =>
+    set((s) => {
+      if (enabled) {
+        // Clear screen when entering API mode — start at 0% confidence
+        const agents = { ...s.agents };
+        for (const id of Object.keys(agents)) {
+          agents[id] = {
+            ...agents[id],
+            confidence: 0,
+            currentThought: '',
+            isThinking: false,
+            confidenceHistory: [],
+          };
+        }
+        return {
+          isApiMode: true,
+          agents,
+          messages: [],
+          activeEdges: [],
+          tickCount: 0,
+          startTime: Date.now(),
+          consensusEvents: [],
+          globalConfidence: 0,
+          solutionSummary: null,
+          pendingQuestion: null,
+          noMoreQuestions: false,
+          mode: 'simulation' as SimMode,
+          isSolving: false,
+          userProblem: '',
+        };
+      }
+      // When disabling API mode, also reset for fresh simulation
+      const agents = { ...s.agents };
+      for (const id of Object.keys(agents)) {
+        agents[id] = {
+          ...agents[id],
+          confidence: 20 + Math.floor(Math.random() * 20),
+          currentThought: '',
+          isThinking: false,
+          confidenceHistory: [],
+        };
+      }
+      return {
+        isApiMode: false,
+        agents,
+        messages: [],
+        activeEdges: [],
+        tickCount: 0,
+        startTime: Date.now(),
+        consensusEvents: [],
+        globalConfidence: 0,
+        solutionSummary: null,
+        pendingQuestion: null,
+        noMoreQuestions: false,
+        mode: 'simulation' as SimMode,
+        isSolving: false,
+        userProblem: '',
+      };
+    }),
 
   resetForNewProblem: () =>
     set((s) => {
@@ -259,7 +332,7 @@ export const useSimStore = create<SimState>((set) => ({
       for (const id of Object.keys(agents)) {
         agents[id] = {
           ...agents[id],
-          confidence: 20 + Math.floor(Math.random() * 20),
+          confidence: 0,
           currentThought: '',
           isThinking: false,
           confidenceHistory: [],
@@ -274,9 +347,12 @@ export const useSimStore = create<SimState>((set) => ({
         consensusEvents: [],
         globalConfidence: 0,
         solutionSummary: null,
+        pendingQuestion: null,
         userProblem: '',
+        currentProblem: '',
         isSolving: false,
         mode: 'simulation' as SimMode,
+        // isApiMode stays as-is
       };
     }),
 
@@ -291,6 +367,10 @@ export const useSimStore = create<SimState>((set) => ({
         timestamp: Date.now(),
         category: 'feedback',
       };
+      // Detect if user asks agents to stop asking questions
+      const stopPhrases = ['תפסיקו לשאול', 'אל תשאלו', 'מספיק שאלות', 'תענו עם מה שיש', 'תעבדו עם הנתונים', 'stop asking', 'לא עוד שאלות', 'תפסיק לשאול', 'עם הנתונים שיש'];
+      const lowerFeedback = feedback.toLowerCase();
+      const shouldStopQuestions = stopPhrases.some((p) => lowerFeedback.includes(p));
       // Reset confidence slightly to force re-evaluation
       const agents = { ...s.agents };
       for (const id of Object.keys(agents)) {
@@ -304,6 +384,10 @@ export const useSimStore = create<SimState>((set) => ({
         messages: [newMsg, ...s.messages].slice(0, 80),
         agents,
         solutionSummary: null,
+        ...(shouldStopQuestions ? { noMoreQuestions: true } : {}),
       };
     }),
+
+  setSimPaused: (paused) => set({ simPaused: paused }),
+  setPendingQuestion: (question) => set({ pendingQuestion: question }),
 }));

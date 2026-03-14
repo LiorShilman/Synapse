@@ -43,14 +43,40 @@ async function executeTick() {
 
   const category = getThoughtCategory(senderId);
 
+  // Check if agent is asking the user for missing information
+  const questionMatch = thought.match(/\[שאלה למשתמש:\s*(.+?)\]/);
+  if (questionMatch && store.isApiMode && store.mode === 'solving' && !store.noMoreQuestions) {
+    // Extract the question and clean the thought
+    const question = questionMatch[1];
+    const cleanThought = thought.replace(/\[שאלה למשתמש:\s*.+?\]/, '').trim();
+    store.setAgentThought(senderId, cleanThought || thought);
+    store.setAgentThinking(senderId, false);
+    // Pause and show the question
+    store.setPendingQuestion(question);
+    store.pauseSolving();
+    store.addMessage({
+      fromId: senderId,
+      toId: 'user',
+      text: `❓ ${question}`,
+      category: 'question',
+    });
+    store.incrementTick();
+    return;
+  }
+
+  // Strip question tags if noMoreQuestions is active (agent ignored the instruction)
+  const cleanedThought = store.noMoreQuestions
+    ? thought.replace(/\[שאלה למשתמש:\s*.+?\]/g, '').trim() || thought
+    : thought;
+
   // Set thought and stop thinking
-  store.setAgentThought(senderId, thought);
+  store.setAgentThought(senderId, cleanedThought);
   store.setAgentThinking(senderId, false);
 
   // Send to receivers
   for (const receiverId of receivers) {
     store.addActiveEdge({ fromId: senderId, toId: receiverId });
-    store.addMessage({ fromId: senderId, toId: receiverId, text: thought, category });
+    store.addMessage({ fromId: senderId, toId: receiverId, text: cleanedThought, category });
 
     // Receiver confidence boost
     const boost = 2 + Math.floor(Math.random() * 4);
@@ -138,8 +164,20 @@ async function triggerConsensusCheck() {
       );
       s.boostAllConfidence(10);
 
-      // In real API mode, generate a structured summary
-      if (isRealMode) {
+      if (!isRealMode) {
+        // Simulation mode: build local summary from agent state
+        useSimStore.getState().setSimPaused(true);
+        const st = useSimStore.getState();
+        const agentLines = AGENTS.map((a) => {
+          const ag = st.agents[a.id];
+          return `**${a.name}** (${a.role}): ${ag?.currentThought ?? '—'}`;
+        }).join('\n- ');
+        const localSummary = `# סיכום קונצנזוס: ${st.currentProblem}\n\n## תובנות הסוכנים\n- ${agentLines}\n\n## מסקנה\nהסוכנים הגיעו להסכמה קולקטיבית עם ביטחון ממוצע של ${st.globalConfidence}%.`;
+        useSimStore.getState().setSolutionSummary(localSummary);
+      } else {
+        // API mode: generate a structured summary via Claude
+        useSimStore.getState().pauseSolving();
+
         try {
           const summary = await generateConsensusSummary();
           useSimStore.getState().setSolutionSummary(summary);
