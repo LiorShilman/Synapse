@@ -5,7 +5,11 @@
       "Bash(npm create vite@latest synapse-temp -- --template react-ts)",
       "Bash(cp -r \"e:/AllMyProjects/synapse-temp/\"* \"e:/AllMyProjects/Synapse/\")",
       "Bash(cp \"e:/AllMyProjects/synapse-temp/.gitignore\" \"e:/AllMyProjects/Synapse/\")",
-      "Bash(rm -rf \"e:/AllMyProjects/synapse-temp\")"
+      "Bash(rm -rf \"e:/AllMyProjects/synapse-temp\")",
+      "Bash(grep -c \"max-width: 767px\" dist/assets/*.css)",
+      "Bash(grep -c \"max-width\" dist/assets/*.css)",
+      "Bash(grep \"max-width\" dist/assets/*.css)",
+      "Bash(npm ls @react-three/postprocessing)"
     ]
   }
 }

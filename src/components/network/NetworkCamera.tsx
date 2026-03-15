@@ -8,8 +8,8 @@ export default function NetworkCamera() {
       enableZoom
       enablePan={false}
       enableRotate
-      minDistance={4}
-      maxDistance={14}
+      minDistance={5}
+      maxDistance={22}
       dampingFactor={0.05}
       enableDamping
     />

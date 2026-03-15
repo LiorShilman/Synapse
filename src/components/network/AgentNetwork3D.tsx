@@ -288,7 +288,7 @@ export default function AgentNetwork3D() {
   return (
     <div style={{ width: '100%', height: '100%' }}>
       <Canvas
-        camera={{ position: [0, 0, 8], fov: 50 }}
+        camera={{ position: [0, 0, 12], fov: 50 }}
         style={{ background: '#030812' }}
         gl={{ antialias: true, alpha: false }}
       >
