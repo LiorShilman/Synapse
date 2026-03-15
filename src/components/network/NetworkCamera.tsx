@@ -35,12 +35,17 @@ export default function NetworkCamera() {
     prevFocusedId.current = focusedAgentId;
   }, [focusedAgentId, camera]);
 
+  // Cancel animation when user interacts (zoom, rotate)
+  const cancelAnimation = () => {
+    isAnimating.current = false;
+  };
+
   useFrame(() => {
     if (!isAnimating.current || !controlsRef.current) return;
 
     // Smoothly lerp camera and target
-    camera.position.lerp(targetCamPos.current, 0.04);
-    controlsRef.current.target.lerp(targetPos.current, 0.04);
+    camera.position.lerp(targetCamPos.current, 0.08);
+    controlsRef.current.target.lerp(targetPos.current, 0.08);
     controlsRef.current.update();
 
     // Stop animating when close enough
@@ -63,6 +68,7 @@ export default function NetworkCamera() {
       maxDistance={22}
       dampingFactor={0.05}
       enableDamping
+      onStart={cancelAnimation}
     />
   );
 }
