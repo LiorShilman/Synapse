@@ -95,26 +95,6 @@ function BrightStars() {
   );
 }
 
-// Subtle nebula clouds
-function Nebula({ position, color, scale }: {
-  position: [number, number, number]; color: string; scale: number;
-}) {
-  const ref = useRef<THREE.Mesh>(null);
-
-  useFrame(() => {
-    if (ref.current) {
-      ref.current.rotation.z += 0.0002;
-      ref.current.rotation.x += 0.0001;
-    }
-  });
-
-  return (
-    <mesh ref={ref} position={position}>
-      <sphereGeometry args={[scale, 16, 16]} />
-      <meshBasicMaterial color={color} transparent opacity={0.015} side={THREE.DoubleSide} />
-    </mesh>
-  );
-}
 
 export default function StarField() {
   return (
@@ -122,11 +102,6 @@ export default function StarField() {
       <DeepStars />
       <MidStars />
       <BrightStars />
-      {/* Nebula glow clouds for depth */}
-      <Nebula position={[-6, 4, -12]} color="#4FC3F7" scale={5} />
-      <Nebula position={[8, -3, -15]} color="#CE93D8" scale={6} />
-      <Nebula position={[0, -6, -10]} color="#FFAB40" scale={4} />
-      <Nebula position={[5, 5, -8]} color="#66BB6A" scale={3.5} />
     </group>
   );
 }

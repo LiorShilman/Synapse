@@ -93,22 +93,22 @@ export default function KnowledgeParticle({ fromId, toId, startTime }: Knowledge
 
   return (
     <group>
-      {/* Core particle — icosahedron for digital feel */}
+      {/* Core particle — bright for bloom glow */}
       <mesh ref={meshRef}>
-        <icosahedronGeometry args={[0.05, 0]} />
-        <meshBasicMaterial color={color} transparent opacity={0.9} />
+        <icosahedronGeometry args={[0.07, 0]} />
+        <meshBasicMaterial color={color} transparent opacity={1.0} />
       </mesh>
-      {/* Glow around particle */}
+      {/* Glow around particle — bloom amplifies this */}
       <mesh ref={glowRef}>
-        <sphereGeometry args={[0.05, 8, 8]} />
-        <meshBasicMaterial color={color} transparent opacity={0.1} side={THREE.BackSide} />
+        <sphereGeometry args={[0.07, 8, 8]} />
+        <meshBasicMaterial color={color} transparent opacity={0.3} side={THREE.BackSide} />
       </mesh>
-      {/* Trail */}
+      {/* Trail — brighter */}
       <points ref={trailRef}>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" args={[trailPositions, 3]} />
         </bufferGeometry>
-        <pointsMaterial color={color} size={0.035} transparent opacity={0.5} sizeAttenuation />
+        <pointsMaterial color={color} size={0.05} transparent opacity={0.8} sizeAttenuation />
       </points>
     </group>
   );
