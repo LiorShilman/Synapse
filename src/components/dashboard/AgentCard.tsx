@@ -2,6 +2,12 @@ import { motion } from 'framer-motion';
 import { AGENTS } from '../../agents/agentDefinitions';
 import { useSimStore } from '../../store/useSimStore';
 import { useTypewriter } from '../../hooks/useTypewriter';
+import OracleDataViz from './OracleDataViz';
+import SageSynthesisViz from './SageSynthesisViz';
+import CipherLogicViz from './CipherLogicViz';
+import EchoMemoryViz from './EchoMemoryViz';
+import NexusNetworkViz from './NexusNetworkViz';
+import ForgeCreativeViz from './ForgeCreativeViz';
 
 interface AgentCardProps {
   agentId: string;
@@ -10,11 +16,13 @@ interface AgentCardProps {
 export default function AgentCard({ agentId }: AgentCardProps) {
   const agentDef = AGENTS.find((a) => a.id === agentId)!;
   const agentState = useSimStore((s) => s.agents[agentId]);
+  const focusedAgentId = useSimStore((s) => s.focusedAgentId);
   const lastMessage = useSimStore((s) =>
     s.messages.find((m) => m.fromId === agentId)
   );
 
   const displayedThought = useTypewriter(agentState?.currentThought ?? '', 20);
+  const isFocused = focusedAgentId === agentId;
 
   if (!agentState) return null;
 
@@ -22,11 +30,19 @@ export default function AgentCard({ agentId }: AgentCardProps) {
     ? AGENTS.find((a) => a.id === lastMessage.toId)
     : null;
 
+  const handleFocus = () => {
+    useSimStore.getState().setFocusedAgent(isFocused ? null : agentId);
+  };
+
   return (
     <motion.div
-      className="agent-card"
+      className={`agent-card ${isFocused ? 'agent-card-focused' : ''}`}
+      onClick={handleFocus}
       style={{
-        borderColor: agentState.isThinking
+        cursor: 'pointer',
+        borderColor: isFocused
+          ? agentDef.color
+          : agentState.isThinking
           ? agentDef.color
           : 'rgba(100, 160, 255, 0.12)',
         boxShadow: agentState.isThinking
@@ -67,10 +83,24 @@ export default function AgentCard({ agentId }: AgentCardProps) {
       {/* תפקיד */}
       <div className="agent-role">{agentDef.role}</div>
 
-      {/* מחשבה נוכחית */}
-      <div className="agent-thought">
-        {displayedThought ? `"${displayedThought}"` : '...'}
-      </div>
+      {/* מחשבה נוכחית — כל סוכן עם ויזואליזציה ייחודית */}
+      {agentId === 'oracle' ? (
+        <OracleDataViz thought={agentState.currentThought} confidence={agentState.confidence} />
+      ) : agentId === 'sage' ? (
+        <SageSynthesisViz thought={agentState.currentThought} confidence={agentState.confidence} />
+      ) : agentId === 'cipher' ? (
+        <CipherLogicViz thought={agentState.currentThought} />
+      ) : agentId === 'echo' ? (
+        <EchoMemoryViz thought={agentState.currentThought} />
+      ) : agentId === 'nexus' ? (
+        <NexusNetworkViz thought={agentState.currentThought} />
+      ) : agentId === 'forge' ? (
+        <ForgeCreativeViz thought={agentState.currentThought} />
+      ) : (
+        <div className="agent-thought">
+          {displayedThought ? `"${displayedThought}"` : '...'}
+        </div>
+      )}
 
       {/* אינטראקציה אחרונה */}
       {lastMessage && receiverDef && (

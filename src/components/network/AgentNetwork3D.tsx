@@ -282,11 +282,36 @@ function AmbientActivityField() {
   );
 }
 
+// Invisible plane to catch background clicks and clear focus
+function BackgroundClickPlane() {
+  const handleClick = () => {
+    useSimStore.getState().setFocusedAgent(null);
+  };
+  return (
+    <mesh position={[0, 0, -15]} onClick={handleClick}>
+      <planeGeometry args={[100, 100]} />
+      <meshBasicMaterial transparent opacity={0} />
+    </mesh>
+  );
+}
+
 export default function AgentNetwork3D() {
   const activeEdges = useSimStore((s) => s.activeEdges);
+  const focusedAgentId = useSimStore((s) => s.focusedAgentId);
+  const focusedAgent = focusedAgentId ? AGENTS.find((a) => a.id === focusedAgentId) : null;
 
   return (
-    <div style={{ width: '100%', height: '100%' }}>
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+      {/* Back to overview button */}
+      {focusedAgent && (
+        <button
+          type="button"
+          className="focus-back-btn"
+          onClick={() => useSimStore.getState().setFocusedAgent(null)}
+        >
+          ← חזרה למבט כללי
+        </button>
+      )}
       <Canvas
         camera={{ position: [0, 0, 12], fov: 50 }}
         style={{ background: '#030812' }}
@@ -296,6 +321,9 @@ export default function AgentNetwork3D() {
         <ambientLight color="#0A1030" intensity={0.8} />
         <directionalLight position={[5, 5, 5]} intensity={0.3} color="#4A6A8A" />
         <directionalLight position={[-3, -2, 4]} intensity={0.15} color="#CE93D8" />
+
+        {/* Background click to clear focus */}
+        <BackgroundClickPlane />
 
         {/* Stars & atmosphere */}
         <StarField />

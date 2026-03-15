@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import { useSimStore } from '../../store/useSimStore';
+import { toggleAudio, updateAmbientTone } from '../../hooks/useSynapseAudio';
 
 interface StatusBarProps {
   onOpenGuide: () => void;
@@ -11,6 +13,12 @@ export default function StatusBar({ onOpenGuide }: StatusBarProps) {
   const currentProblem = useSimStore((s) => s.currentProblem);
   const isApiMode = useSimStore((s) => s.isApiMode);
   const mode = useSimStore((s) => s.mode);
+  const [audioOn, setAudioOn] = useState(false);
+
+  // Update ambient tone when confidence changes
+  useEffect(() => {
+    updateAmbientTone(globalConfidence);
+  }, [globalConfidence]);
 
   const elapsed = Math.floor((Date.now() - startTime) / 1000);
   const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
@@ -59,6 +67,18 @@ export default function StatusBar({ onOpenGuide }: StatusBarProps) {
       </div>
       <div className="status-bar-left">
         <span className="status-problem">{currentProblem}</span>
+        <button
+          type="button"
+          className={`audio-toggle ${audioOn ? 'audio-toggle-active' : ''}`}
+          onClick={() => {
+            const next = !audioOn;
+            setAudioOn(next);
+            toggleAudio(next);
+          }}
+          title={audioOn ? 'כבה צלילים' : 'הפעל צלילים'}
+        >
+          {audioOn ? '🔊' : '🔇'}
+        </button>
         <button
           type="button"
           className="guide-toggle"

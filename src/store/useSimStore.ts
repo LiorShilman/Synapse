@@ -54,6 +54,10 @@ interface SimState {
   pendingQuestion: string | null;
   noMoreQuestions: boolean;
 
+  // Focus mode
+  focusedAgentId: string | null;
+  setFocusedAgent: (id: string | null) => void;
+
   // Actions
   setAgentThinking: (id: string, thinking: boolean) => void;
   setAgentThought: (id: string, thought: string) => void;
@@ -119,6 +123,9 @@ export const useSimStore = create<SimState>((set) => ({
   simPaused: false,
   pendingQuestion: null,
   noMoreQuestions: false,
+  focusedAgentId: null,
+
+  setFocusedAgent: (id) => set({ focusedAgentId: id }),
 
   setAgentThinking: (id, thinking) =>
     set((s) => ({

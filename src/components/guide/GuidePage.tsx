@@ -169,6 +169,61 @@ export default function GuidePage({ onClose }: GuidePageProps) {
               </div>
             </div>
 
+            {/* Agent Visualizations */}
+            <div className="guide-section">
+              <div className="guide-section-title">ויזואליזציות ייחודיות לכל סוכן</div>
+              <div className="guide-viz-desc">
+                כל סוכן מציג מידע בצורה ויזואלית המותאמת לתפקידו — לא רק טקסט גולמי
+              </div>
+              <div className="guide-ai-grid">
+                <div className="guide-ai-card">
+                  <span className="guide-ai-icon">📊</span>
+                  <div className="guide-ai-text"><strong style={{color:'#4FC3F7'}}>אורקל</strong> — מדדים מספריים, מד ביטחון מפולח וחילוץ נתונים מחושב</div>
+                </div>
+                <div className="guide-ai-card">
+                  <span className="guide-ai-icon">🧬</span>
+                  <div className="guide-ai-text"><strong style={{color:'#FFD54F'}}>סייג׳</strong> — מפת סוכנים עם אחוזי ביטחון, פס סינתזה ושלב עבודה</div>
+                </div>
+                <div className="guide-ai-card">
+                  <span className="guide-ai-icon">✅</span>
+                  <div className="guide-ai-text"><strong style={{color:'#EF9A9A'}}>סייפר</strong> — בדיקות לוגיות (עקביות, הנחות, קצוות) עם מוני אימות</div>
+                </div>
+                <div className="guide-ai-card">
+                  <span className="guide-ai-icon">🧠</span>
+                  <div className="guide-ai-text"><strong style={{color:'#66BB6A'}}>אקו</strong> — בנק זיכרון, קצב למידה וציר זמן של זכרונות אחרונים</div>
+                </div>
+                <div className="guide-ai-card">
+                  <span className="guide-ai-icon">🕸️</span>
+                  <div className="guide-ai-text"><strong style={{color:'#CE93D8'}}>נקסוס</strong> — מיני-רשת SVG עם צמתים פועמים ופס בהירות רשת</div>
+                </div>
+                <div className="guide-ai-card">
+                  <span className="guide-ai-icon">🔥</span>
+                  <div className="guide-ai-text"><strong style={{color:'#FFAB40'}}>פורג׳</strong> — מד חום 15-מקטעי עם מוני פתרונות, טיוטות ויצירות</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Interaction features */}
+            <div className="guide-section">
+              <div className="guide-section-title">אינטראקציה עם המערכת</div>
+              <div className="guide-flow-compact">
+                {[
+                  { num: '🎯', title: 'מצב התמקדות', desc: 'לחץ על כרטיס סוכן — המצלמה תעוף אליו ב-3D. לחץ שוב או על הרקע לחזרה', color: '#4FC3F7' },
+                  { num: '🔍', title: 'זום וסיבוב', desc: 'גלגל עכבר לזום, גרירה לסיבוב. המצלמה מסתובבת אוטומטית במצב רגיל', color: '#CE93D8' },
+                  { num: '🔊', title: 'צלילים', desc: 'צלילי מחשבה ייחודיים לכל סוכן, סריקת חיבור וצליל קונצנזוס — כפתור בסרגל', color: '#FFAB40' },
+                  { num: '⏸️', title: 'בקרת סימולציה', desc: 'השהה/המשך, דלג מחזור, או אפס הכל דרך סרגל הכלים', color: '#66BB6A' },
+                ].map((step, i) => (
+                  <div key={i} className="guide-flow-item">
+                    <div className="guide-flow-num" style={{ borderColor: step.color, color: step.color, fontSize: '1.1rem' }}>{step.num}</div>
+                    <div>
+                      <div className="guide-flow-title">{step.title}</div>
+                      <div className="guide-flow-desc">{step.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* AI Mode + Quickstart */}
             <div className="guide-section">
               <div className="guide-section-title">מצב AI אמיתי</div>

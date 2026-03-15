@@ -1,6 +1,7 @@
 import { AGENTS } from './agentDefinitions';
 import { generateThought, getThoughtCategory, generateConsensusSummary, generateConsensusThought } from '../hooks/useAgentThought';
 import { useSimStore } from '../store/useSimStore';
+import { playThoughtPing, playConnectionSweep, playConsensusChime } from '../hooks/useSynapseAudio';
 
 function pickWeightedAgent(): string {
   const store = useSimStore.getState();
@@ -73,10 +74,15 @@ async function executeTick() {
   store.setAgentThought(senderId, cleanedThought);
   store.setAgentThinking(senderId, false);
 
+  // Audio: ping for the thinking agent
+  const senderDef = AGENTS.find((a) => a.id === senderId);
+  if (senderDef) playThoughtPing(senderDef.color);
+
   // Send to receivers
   for (const receiverId of receivers) {
     store.addActiveEdge({ fromId: senderId, toId: receiverId });
     store.addMessage({ fromId: senderId, toId: receiverId, text: cleanedThought, category });
+    playConnectionSweep();
 
     // Receiver confidence boost
     const boost = 2 + Math.floor(Math.random() * 4);
@@ -163,6 +169,7 @@ async function triggerConsensusCheck() {
       s.setAgentThought('echo', echoThought);
 
       // אירוע קונצנזוס
+      playConsensusChime();
       s.addConsensusEvent(
         `הסכמה קולקטיבית בנושא: ${s.currentProblem}`
       );
