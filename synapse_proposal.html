@@ -963,6 +963,352 @@
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
   }
+
+  /* ═══════════════════════════════════════
+     UPGRADE: Scroll Animations
+  ═══════════════════════════════════════ */
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1);
+  }
+  .animate-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Staggered children */
+  .animate-on-scroll.visible .agent-card,
+  .animate-on-scroll.visible .benefit-card,
+  .animate-on-scroll.visible .tech-card,
+  .animate-on-scroll.visible .cost-card,
+  .animate-on-scroll.visible .use-case-group,
+  .animate-on-scroll.visible .flow-step {
+    opacity: 0;
+    animation: staggerIn 0.5s ease forwards;
+  }
+  .animate-on-scroll.visible .agent-card:nth-child(1),
+  .animate-on-scroll.visible .benefit-card:nth-child(1),
+  .animate-on-scroll.visible .tech-card:nth-child(1),
+  .animate-on-scroll.visible .cost-card:nth-child(1),
+  .animate-on-scroll.visible .use-case-group:nth-child(1),
+  .animate-on-scroll.visible .flow-step:nth-child(1) { animation-delay: 0.05s; }
+  .animate-on-scroll.visible .agent-card:nth-child(2),
+  .animate-on-scroll.visible .benefit-card:nth-child(2),
+  .animate-on-scroll.visible .tech-card:nth-child(2),
+  .animate-on-scroll.visible .cost-card:nth-child(2),
+  .animate-on-scroll.visible .use-case-group:nth-child(2),
+  .animate-on-scroll.visible .flow-step:nth-child(2) { animation-delay: 0.12s; }
+  .animate-on-scroll.visible .agent-card:nth-child(3),
+  .animate-on-scroll.visible .benefit-card:nth-child(3),
+  .animate-on-scroll.visible .tech-card:nth-child(3),
+  .animate-on-scroll.visible .cost-card:nth-child(3),
+  .animate-on-scroll.visible .use-case-group:nth-child(3),
+  .animate-on-scroll.visible .flow-step:nth-child(3) { animation-delay: 0.19s; }
+  .animate-on-scroll.visible .agent-card:nth-child(4),
+  .animate-on-scroll.visible .benefit-card:nth-child(4),
+  .animate-on-scroll.visible .cost-card:nth-child(4),
+  .animate-on-scroll.visible .flow-step:nth-child(4) { animation-delay: 0.26s; }
+  .animate-on-scroll.visible .agent-card:nth-child(5),
+  .animate-on-scroll.visible .flow-step:nth-child(5) { animation-delay: 0.33s; }
+  .animate-on-scroll.visible .agent-card:nth-child(6) { animation-delay: 0.4s; }
+
+  @keyframes staggerIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ═══════════════════════════════════════
+     UPGRADE: Reading Progress Bar
+  ═══════════════════════════════════════ */
+  .reading-progress {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    z-index: 200;
+    background: transparent;
+    pointer-events: none;
+  }
+  .reading-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--gold), var(--accent-light), var(--gold-light));
+    transition: width 0.1s linear;
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* ═══════════════════════════════════════
+     UPGRADE: Floating TOC Navigation
+  ═══════════════════════════════════════ */
+  .toc-nav {
+    position: fixed;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+    z-index: 150;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: opacity 0.4s;
+  }
+  .toc-nav.hidden { opacity: 0; pointer-events: none; }
+
+  .toc-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--paper-deep);
+    border: 2px solid var(--ink-muted);
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .toc-dot:hover,
+  .toc-dot.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    transform: scale(1.3);
+  }
+  .toc-dot .toc-label {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    background: var(--accent);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    transform: translateY(-50%) translateX(6px);
+  }
+  .toc-dot:hover .toc-label {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+
+  @media (max-width: 1100px) {
+    .toc-nav { display: none; }
+  }
+
+  /* ═══════════════════════════════════════
+     UPGRADE: Enhanced Hover Effects
+  ═══════════════════════════════════════ */
+  .agent-card {
+    transition: box-shadow 0.3s, transform 0.3s;
+  }
+  .agent-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .benefit-card {
+    transition: box-shadow 0.3s, transform 0.3s;
+  }
+  .benefit-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .tech-card {
+    transition: box-shadow 0.3s, transform 0.3s;
+  }
+  .tech-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .flow-content {
+    transition: box-shadow 0.3s, border-color 0.3s;
+  }
+  .flow-step:hover .flow-content {
+    box-shadow: var(--shadow-md);
+    border-color: var(--gold);
+  }
+  .flow-step:hover .flow-dot {
+    background: var(--gold);
+    color: white;
+    transition: all 0.3s;
+  }
+
+  .use-case-group {
+    transition: box-shadow 0.3s, transform 0.2s;
+  }
+  .use-case-group:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  /* ═══════════════════════════════════════
+     UPGRADE: Animated Cover Background
+  ═══════════════════════════════════════ */
+  .cover {
+    background: linear-gradient(135deg, #0f2540 0%, #1a3a5c 40%, #1e4470 70%, #152d4d 100%);
+    background-size: 400% 400%;
+    animation: coverGradient 12s ease infinite;
+  }
+  @keyframes coverGradient {
+    0% { background-position: 0% 50%; }
+    33% { background-position: 100% 50%; }
+    66% { background-position: 50% 100%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .cover-stat {
+    transition: transform 0.3s;
+  }
+  .cover-stat:hover {
+    transform: translateY(-4px);
+  }
+  .cover-stat-num {
+    transition: color 0.3s;
+  }
+  .cover-stat:hover .cover-stat-num {
+    color: white;
+  }
+
+  /* ═══════════════════════════════════════
+     UPGRADE: Dark Mode Toggle
+  ═══════════════════════════════════════ */
+  .mode-toggle {
+    position: fixed;
+    bottom: 32px;
+    left: 200px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+  }
+  .mode-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Dark mode */
+  body.dark-mode {
+    --ink: #e8ecf0;
+    --ink-soft: #c0c8d4;
+    --ink-muted: #7a8a9a;
+    --paper: #0c1220;
+    --paper-warm: #111a2a;
+    --paper-deep: #1a2438;
+    --border: rgba(200,220,255,0.08);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+    --shadow-md: 0 8px 32px rgba(0,0,0,0.4);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  body.dark-mode .problem-table tbody tr { background: var(--paper-warm); }
+  body.dark-mode .problem-table tbody tr:nth-child(even) { background: var(--paper-deep); }
+  body.dark-mode .problem-table thead tr { background: #0a1628; }
+  body.dark-mode .timeline-table thead tr { background: #0a1628; }
+  body.dark-mode .timeline-table tbody tr { border-color: var(--paper-deep); }
+
+  body.dark-mode .agent-card,
+  body.dark-mode .benefit-card,
+  body.dark-mode .tech-card,
+  body.dark-mode .cost-card,
+  body.dark-mode .use-case-group,
+  body.dark-mode .flow-content {
+    background: var(--paper-warm);
+    border-color: var(--border);
+  }
+
+  body.dark-mode .use-case-header {
+    background: linear-gradient(135deg, var(--paper-deep), var(--paper-warm));
+  }
+  body.dark-mode .use-case-icon { background: var(--paper-deep); }
+  body.dark-mode .flow-dot {
+    background: var(--paper-warm);
+    color: var(--gold-light);
+  }
+
+  body.dark-mode .arch-box { background: #050a14; }
+
+  body.dark-mode .agent-value { background: rgba(26,74,42,0.2); color: #66bb6a; }
+  body.dark-mode .agent-chip { background: var(--paper-deep); border-color: var(--border); }
+
+  body.dark-mode .col-before { color: #ef5350; }
+  body.dark-mode .col-after { color: #66bb6a; }
+  body.dark-mode .problem-table td:first-child { color: var(--accent-light); }
+
+  body.dark-mode .cost-card.highlight { background: #0a1628; }
+
+  body.dark-mode .section-header::after { background: var(--gold-light); }
+  body.dark-mode .section-title { color: var(--accent-light); }
+  body.dark-mode .section-num { color: var(--gold-light); }
+
+  body.dark-mode .exec-summary { background: #0a1628; }
+
+  body.dark-mode .mode-toggle,
+  body.dark-mode .print-btn { background: var(--paper-warm); border: 1px solid var(--border); }
+
+  body.dark-mode p[style*="gold-pale"] {
+    background: rgba(184,134,11,0.08) !important;
+  }
+
+  /* ═══════════════════════════════════════
+     UPGRADE: Smooth Scrolling
+  ═══════════════════════════════════════ */
+  html { scroll-behavior: smooth; }
+
+  /* ═══════════════════════════════════════
+     UPGRADE: Back to top button
+  ═══════════════════════════════════════ */
+  .back-to-top {
+    position: fixed;
+    bottom: 32px;
+    left: 140px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .back-to-top.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .back-to-top:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* ═══════════════════════════════════════
+     UPGRADE: Print — hide new floating UI
+  ═══════════════════════════════════════ */
+  @media print {
+    .reading-progress, .toc-nav, .mode-toggle, .back-to-top { display: none !important; }
+    .animate-on-scroll { opacity: 1 !important; transform: none !important; }
+    .animate-on-scroll .agent-card,
+    .animate-on-scroll .benefit-card,
+    .animate-on-scroll .tech-card,
+    .animate-on-scroll .cost-card,
+    .animate-on-scroll .use-case-group,
+    .animate-on-scroll .flow-step {
+      opacity: 1 !important;
+      animation: none !important;
+    }
+  }
 </style>
 </head>
 <body>
@@ -1011,7 +1357,7 @@
   <div class="cover-bottom">
     <div class="cover-meta">
       <strong>תאריך הגשה</strong>
-      מרץ 2025
+      מרץ 2026
     </div>
     <div class="cover-meta" style="text-align:left">
       <strong>סיווג</strong>
@@ -1026,12 +1372,12 @@
 <div class="doc-body">
 
   <!-- ─── SECTION 1: תקציר מנהלים ─── -->
-  <div class="section-header">
+  <div class="section-header animate-on-scroll" id="sec-summary">
     <span class="section-num">01</span>
     <h2 class="section-title">תקציר מנהלים</h2>
   </div>
 
-  <div class="exec-summary">
+  <div class="exec-summary animate-on-scroll">
     <div class="exec-summary-label">● ● ● Executive Summary</div>
     <p>
       מערכת <strong>סינאפס</strong> היא פלטפורמה ויזואלית לפתרון בעיות מורכבות באמצעות <strong>6 סוכני AI מתמחים</strong> הפועלים בשיתוף פעולה. המערכת מנתחת דילמות ממספר זוויות בו-זמנית — ניתוח נתונים, אימות לוגי, חשיבה יצירתית, זיכרון ארגוני, תיאום עמדות וסינתזה — ומגיעה לקונצנזוס מנומק.<br><br>
@@ -1040,16 +1386,16 @@
   </div>
 
   <!-- ─── SECTION 2: הבעיה שאנחנו פותרים ─── -->
-  <div class="section-header">
+  <div class="section-header animate-on-scroll" id="sec-problem">
     <span class="section-num">02</span>
     <h2 class="section-title">הבעיה שאנחנו פותרים</h2>
   </div>
 
-  <p style="color:var(--ink-soft); margin-bottom:20px; font-size:15px;">
+  <p class="animate-on-scroll" style="color:var(--ink-soft); margin-bottom:20px; font-size:15px;">
     ארגונים רבים מתמודדים עם אתגרים ידועים בקבלת החלטות — תלות ביחידים, חזרה על טעויות, הטיות קוגניטיביות ועיכובים תהליכיים. מערכת סינאפס מציעה מענה ישיר לכל אחד מהם:
   </p>
 
-  <table class="problem-table">
+  <table class="problem-table animate-on-scroll">
     <thead>
       <tr>
         <th>האתגר</th>
@@ -1087,12 +1433,12 @@
   </table>
 
   <!-- ─── SECTION 3: ארכיטקטורת השילוב ─── -->
-  <div class="section-header">
+  <div class="section-header animate-on-scroll" id="sec-arch">
     <span class="section-num">03</span>
     <h2 class="section-title">ארכיטקטורת השילוב</h2>
   </div>
 
-  <div style="background:white; border:1px solid var(--border); border-radius:12px; padding:32px; margin:24px 0; box-shadow:var(--shadow-sm);">
+  <div class="animate-on-scroll" style="background:white; border:1px solid var(--border); border-radius:12px; padding:32px; margin:24px 0; box-shadow:var(--shadow-sm);">
     <svg width="100%" viewBox="0 0 860 420" xmlns="http://www.w3.org/2000/svg" style="font-family:'Heebo',sans-serif; display:block;">
       <defs>
         <marker id="arrowB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -1159,7 +1505,7 @@
     </svg>
   </div>
 
-  <div class="tech-list">
+  <div class="tech-list animate-on-scroll">
     <div class="tech-card">
       <div class="tech-num">01</div>
       <div class="tech-title">שרת פנימי</div>
@@ -1178,16 +1524,16 @@
   </div>
 
   <!-- ─── SECTION 4: 6 הסוכנים ─── -->
-  <div class="section-header">
+  <div class="section-header animate-on-scroll" id="sec-agents">
     <span class="section-num">04</span>
     <h2 class="section-title">6 הסוכנים — הצוות הוירטואלי</h2>
   </div>
 
-  <p style="color:var(--ink-soft); margin-bottom:20px; font-size:15px;">
+  <p class="animate-on-scroll" style="color:var(--ink-soft); margin-bottom:20px; font-size:15px;">
     כל סוכן ממלא תפקיד ייחודי בתהליך — יחד הם יוצרים "צוות מומחים" שמכסה את כל זוויות הניתוח:
   </p>
 
-  <div class="agents-grid">
+  <div class="agents-grid animate-on-scroll">
     <div class="agent-card" style="--agent-color:#1a3a5c">
       <div class="agent-emoji">🔮</div>
       <div class="agent-name">אורקל</div>
@@ -1233,12 +1579,12 @@
   </div>
 
   <!-- ─── SECTION 5: תחומי שימוש ─── -->
-  <div class="section-header">
+  <div class="section-header animate-on-scroll" id="sec-usecases">
     <span class="section-num">05</span>
     <h2 class="section-title">תחומי שימוש בארגון</h2>
   </div>
 
-  <div class="use-case-group">
+  <div class="use-case-group animate-on-scroll">
     <div class="use-case-header">
       <div class="use-case-icon">🔧</div>
       <div class="use-case-title">מקצועי-טכני</div>
@@ -1251,7 +1597,7 @@
     </div>
   </div>
 
-  <div class="use-case-group">
+  <div class="use-case-group animate-on-scroll">
     <div class="use-case-header">
       <div class="use-case-icon">📋</div>
       <div class="use-case-title">ניהולי-ארגוני</div>
@@ -1264,7 +1610,7 @@
     </div>
   </div>
 
-  <div class="use-case-group">
+  <div class="use-case-group animate-on-scroll">
     <div class="use-case-header">
       <div class="use-case-icon">👤</div>
       <div class="use-case-title">אישי-מקצועי — לכל עובד</div>
@@ -1278,12 +1624,12 @@
   </div>
 
   <!-- ─── SECTION 6: תהליך עבודה ─── -->
-  <div class="section-header">
+  <div class="section-header animate-on-scroll" id="sec-workflow">
     <span class="section-num">06</span>
     <h2 class="section-title">תהליך עבודה טיפוסי</h2>
   </div>
 
-  <div class="flow">
+  <div class="flow animate-on-scroll">
     <div class="flow-step">
       <div class="flow-dot">1</div>
       <div class="flow-content">
@@ -1332,12 +1678,12 @@
   <div class="gold-divider"></div>
 
   <!-- ─── SECTION 7: יתרונות עיקריים ─── -->
-  <div class="section-header">
+  <div class="section-header animate-on-scroll" id="sec-benefits">
     <span class="section-num">07</span>
     <h2 class="section-title">יתרונות עיקריים</h2>
   </div>
 
-  <div class="benefits-grid">
+  <div class="benefits-grid animate-on-scroll">
     <div class="benefit-card">
       <div class="benefit-icon">🔒</div>
       <div>
@@ -1389,12 +1735,12 @@
   </div>
 
   <!-- ─── SECTION 8: תוכנית יישום ─── -->
-  <div class="section-header">
+  <div class="section-header animate-on-scroll" id="sec-plan">
     <span class="section-num">08</span>
     <h2 class="section-title">תוכנית יישום מוצעת</h2>
   </div>
 
-  <table class="timeline-table">
+  <table class="timeline-table animate-on-scroll">
     <thead>
       <tr>
         <th>שלב</th>
@@ -1440,12 +1786,12 @@
   </table>
 
   <!-- ─── SECTION 9: עלויות ─── -->
-  <div class="section-header">
+  <div class="section-header animate-on-scroll" id="sec-costs">
     <span class="section-num">09</span>
     <h2 class="section-title">ניתוח עלויות</h2>
   </div>
 
-  <div class="cost-grid">
+  <div class="cost-grid animate-on-scroll">
     <div class="cost-card">
       <div class="cost-item">תשתית שרת</div>
       <div class="cost-value">₪0</div>
@@ -1474,7 +1820,7 @@
   </p>
 
   <!-- ─── CTA ─── -->
-  <div class="cta-section">
+  <div class="cta-section animate-on-scroll">
     <div class="cta-title">הצעד הבא</div>
     <div class="cta-subtitle">שלושה שלבים פשוטים להתנעת הפרויקט</div>
     <div class="cta-steps">
@@ -1500,7 +1846,7 @@
 <!-- ─── FOOTER ─── -->
 <div class="doc-footer">
   <div class="doc-footer-logo">🧠 סינאפס — אינטליגנציה קולקטיבית</div>
-  <div>פנים-ארגוני בלבד &nbsp;|&nbsp; מרץ 2025</div>
+  <div>פנים-ארגוני בלבד &nbsp;|&nbsp; מרץ 2026</div>
   <div>גרסה 1.0</div>
 </div>
 
@@ -1508,6 +1854,116 @@
 <button class="print-btn no-print" onclick="window.print()">
   🖨️ הדפסה / שמירה כ-PDF
 </button>
+
+<!-- READING PROGRESS BAR -->
+<div class="reading-progress no-print">
+  <div class="reading-progress-bar" id="progressBar"></div>
+</div>
+
+<!-- TOC NAVIGATION -->
+<nav class="toc-nav hidden no-print" id="tocNav">
+  <div class="toc-dot" data-target="sec-summary"><span class="toc-label">תקציר מנהלים</span></div>
+  <div class="toc-dot" data-target="sec-problem"><span class="toc-label">הבעיה</span></div>
+  <div class="toc-dot" data-target="sec-arch"><span class="toc-label">ארכיטקטורה</span></div>
+  <div class="toc-dot" data-target="sec-agents"><span class="toc-label">הסוכנים</span></div>
+  <div class="toc-dot" data-target="sec-usecases"><span class="toc-label">תחומי שימוש</span></div>
+  <div class="toc-dot" data-target="sec-workflow"><span class="toc-label">תהליך עבודה</span></div>
+  <div class="toc-dot" data-target="sec-benefits"><span class="toc-label">יתרונות</span></div>
+  <div class="toc-dot" data-target="sec-plan"><span class="toc-label">תוכנית יישום</span></div>
+  <div class="toc-dot" data-target="sec-costs"><span class="toc-label">עלויות</span></div>
+</nav>
+
+<!-- DARK MODE TOGGLE -->
+<button class="mode-toggle no-print" id="modeToggle" title="מצב כהה / בהיר">🌙</button>
+
+<!-- BACK TO TOP -->
+<button class="back-to-top no-print" id="backToTop" title="חזרה למעלה">↑</button>
+
+<script>
+(function() {
+  // ── Scroll Animations (IntersectionObserver) ──
+  const animEls = document.querySelectorAll('.animate-on-scroll');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    animEls.forEach(function(el) { observer.observe(el); });
+  } else {
+    // Fallback: show everything
+    animEls.forEach(function(el) { el.classList.add('visible'); });
+  }
+
+  // ── Reading Progress Bar ──
+  var progressBar = document.getElementById('progressBar');
+  window.addEventListener('scroll', function() {
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = progress + '%';
+  });
+
+  // ── TOC Navigation ──
+  var tocNav = document.getElementById('tocNav');
+  var tocDots = tocNav.querySelectorAll('.toc-dot');
+  var sectionIds = Array.from(tocDots).map(function(d) { return d.getAttribute('data-target'); });
+
+  // Show TOC after scrolling past cover
+  window.addEventListener('scroll', function() {
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    if (scrollTop > window.innerHeight * 0.8) {
+      tocNav.classList.remove('hidden');
+    } else {
+      tocNav.classList.add('hidden');
+    }
+  });
+
+  // Click to navigate
+  tocDots.forEach(function(dot) {
+    dot.addEventListener('click', function() {
+      var target = document.getElementById(dot.getAttribute('data-target'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // Highlight active section
+  function updateActiveToc() {
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var active = null;
+    sectionIds.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el && el.offsetTop - 200 <= scrollTop) active = id;
+    });
+    tocDots.forEach(function(dot) {
+      dot.classList.toggle('active', dot.getAttribute('data-target') === active);
+    });
+  }
+  window.addEventListener('scroll', updateActiveToc);
+
+  // ── Dark Mode Toggle ──
+  var modeToggle = document.getElementById('modeToggle');
+  var isDark = false;
+  modeToggle.addEventListener('click', function() {
+    isDark = !isDark;
+    document.body.classList.toggle('dark-mode', isDark);
+    modeToggle.textContent = isDark ? '☀️' : '🌙';
+  });
+
+  // ── Back to Top ──
+  var backToTop = document.getElementById('backToTop');
+  window.addEventListener('scroll', function() {
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    backToTop.classList.toggle('visible', scrollTop > window.innerHeight * 1.5);
+  });
+  backToTop.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
 
 </body>
 </html>
