@@ -1542,7 +1542,7 @@
 .category-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .category-chip {
@@ -1550,9 +1550,9 @@
   align-items: center;
   gap: 5px;
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: 1rem;
   font-weight: 600;
-  padding: 5px 12px;
+  padding: 7px 16px;
   border-radius: 20px;
   border: 1px solid var(--color-border);
   background: var(--color-bg-surface);
@@ -1572,7 +1572,7 @@
 }
 
 .category-chip-icon {
-  font-size: 0.9rem;
+  font-size: 1.1rem;
 }
 
 .category-examples {
@@ -1590,15 +1590,15 @@
 .category-example {
   text-align: right;
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: 1rem;
   color: var(--color-text-secondary);
   background: var(--color-bg-deep);
   border: 1px solid rgba(100, 160, 255, 0.06);
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 10px 14px;
   cursor: pointer;
   transition: all 0.2s ease;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .category-example:hover {

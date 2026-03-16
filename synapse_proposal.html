@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הצעת ייעול — מערכת סינאפס</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Frank+Ruhl+Libre:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f1117;
+    --ink-soft: #2a2d3a;
+    --ink-muted: #5a5f72;
+    --paper: #f7f5f0;
+    --paper-warm: #efe9df;
+    --paper-deep: #e4dcd0;
+    --gold: #b8860b;
+    --gold-light: #d4a017;
+    --gold-pale: #f0e4c0;
+    --accent: #1a3a5c;
+    --accent-mid: #2a5080;
+    --accent-light: #3d6fa0;
+    --red: #8b1a1a;
+    --green: #1a4a2a;
+    --border: rgba(15,17,23,0.12);
+    --shadow-sm: 0 2px 8px rgba(15,17,23,0.08);
+    --shadow-md: 0 8px 32px rgba(15,17,23,0.12);
+    --shadow-lg: 0 20px 60px rgba(15,17,23,0.16);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* ─── PRINT PAGE SETUP ─── */
+  @media print {
+    body { background: white; font-size: 12px; }
+    .no-print { display: none !important; }
+    .page-break { page-break-before: always; }
+    section { break-inside: avoid; }
+  }
+
+  /* ─── COVER PAGE ─── */
+  .cover {
+    min-height: 100vh;
+    background: var(--accent);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    padding: 60px;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 80%, rgba(184,134,11,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 20%, rgba(255,255,255,0.04) 0%, transparent 50%);
+  }
+
+  .cover-watermark {
+    position: absolute;
+    bottom: -80px;
+    left: -80px;
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 320px;
+    font-weight: 900;
+    color: rgba(255,255,255,0.03);
+    line-height: 1;
+    user-select: none;
+    letter-spacing: -10px;
+  }
+
+  .cover-top {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .cover-logo-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .cover-logo-icon {
+    width: 48px;
+    height: 48px;
+    border: 2px solid rgba(184,134,11,0.6);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  .cover-logo-text {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 1px;
+  }
+
+  .cover-badge {
+    background: rgba(184,134,11,0.2);
+    border: 1px solid rgba(184,134,11,0.5);
+    color: var(--gold-light);
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .cover-main {
+    position: relative;
+    z-index: 1;
+  }
+
+  .cover-label {
+    color: var(--gold-light);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .cover-label::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 1px;
+    background: var(--gold-light);
+    opacity: 0.6;
+  }
+
+  .cover-title {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: clamp(48px, 7vw, 88px);
+    font-weight: 900;
+    color: white;
+    line-height: 1.05;
+    margin-bottom: 16px;
+    letter-spacing: -1px;
+  }
+
+  .cover-title span {
+    color: var(--gold-light);
+  }
+
+  .cover-subtitle {
+    font-size: 20px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.65);
+    max-width: 580px;
+    line-height: 1.6;
+    margin-bottom: 48px;
+  }
+
+  .cover-stats {
+    display: flex;
+    gap: 40px;
+  }
+
+  .cover-stat {
+    border-right: 2px solid rgba(184,134,11,0.4);
+    padding-right: 20px;
+  }
+
+  .cover-stat:last-child { border-right: none; }
+
+  .cover-stat-num {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--gold-light);
+    line-height: 1;
+  }
+
+  .cover-stat-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+    font-weight: 400;
+  }
+
+  .cover-bottom {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 28px;
+  }
+
+  .cover-meta {
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+  }
+
+  .cover-meta strong {
+    color: rgba(255,255,255,0.7);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .cover-gold-line {
+    width: 120px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    margin-bottom: 24px;
+  }
+
+  /* ─── DOCUMENT BODY ─── */
+  .doc-body {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+
+  /* ─── SECTION HEADERS ─── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    margin-top: 60px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--paper-deep);
+    position: relative;
+  }
+
+  .section-header::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    right: 0;
+    width: 60px;
+    height: 2px;
+    background: var(--gold);
+  }
+
+  .section-num {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    min-width: 32px;
+    opacity: 0.8;
+  }
+
+  .section-title {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+
+  /* ─── EXECUTIVE SUMMARY ─── */
+  .exec-summary {
+    background: var(--accent);
+    border-radius: 12px;
+    padding: 40px 48px;
+    margin: 40px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .exec-summary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(184,134,11,0.15) 0%, transparent 70%);
+  }
+
+  .exec-summary-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    margin-bottom: 16px;
+  }
+
+  .exec-summary p {
+    font-size: 17px;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.75;
+    font-weight: 300;
+    position: relative;
+    z-index: 1;
+  }
+
+  .exec-summary p strong {
+    color: white;
+    font-weight: 600;
+  }
+
+  /* ─── PROBLEM TABLE ─── */
+  .problem-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    box-shadow: var(--shadow-sm);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .problem-table thead tr {
+    background: var(--accent);
+    color: white;
+  }
+
+  .problem-table thead th {
+    padding: 14px 20px;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .problem-table tbody tr {
+    border-bottom: 1px solid var(--paper-deep);
+    background: white;
+    transition: background 0.2s;
+  }
+
+  .problem-table tbody tr:nth-child(even) {
+    background: #fafaf8;
+  }
+
+  .problem-table tbody tr:last-child { border-bottom: none; }
+
+  .problem-table td {
+    padding: 14px 20px;
+    font-size: 14px;
+    vertical-align: top;
+    line-height: 1.6;
+  }
+
+  .problem-table td:first-child {
+    font-weight: 600;
+    color: var(--accent);
+    min-width: 160px;
+  }
+
+  .problem-table .col-before {
+    color: var(--red);
+    font-size: 13px;
+  }
+
+  .problem-table .col-after {
+    color: var(--green);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* ─── ARCHITECTURE BOX ─── */
+  .arch-box {
+    background: var(--ink);
+    border-radius: 12px;
+    padding: 36px;
+    margin: 24px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #a0c4a0;
+    line-height: 1.9;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .arch-box::before {
+    content: 'ARCHITECTURE';
+    position: absolute;
+    top: 16px;
+    left: 20px;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.15);
+    font-family: 'Heebo', sans-serif;
+  }
+
+  .arch-box .comment { color: #5a8a5a; }
+  .arch-box .highlight { color: #7dd3fc; }
+  .arch-box .warn { color: #f97316; }
+  .arch-box .bright { color: #e2e8f0; }
+
+  /* ─── AGENTS GRID ─── */
+  .agents-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  @media (max-width: 700px) {
+    .agents-grid { grid-template-columns: 1fr; }
+  }
+
+  .agent-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .agent-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    height: 3px;
+    background: var(--agent-color, var(--gold));
+  }
+
+  .agent-emoji {
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+
+  .agent-name {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .agent-role {
+    font-size: 12px;
+    color: var(--ink-muted);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .agent-desc {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+
+  .agent-value {
+    font-size: 12px;
+    color: var(--green);
+    font-weight: 600;
+    background: rgba(26,74,42,0.07);
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+  }
+
+  /* ─── USE CASES ─── */
+  .use-case-group {
+    margin: 20px 0;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .use-case-header {
+    background: linear-gradient(135deg, var(--paper-warm), var(--paper-deep));
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .use-case-icon {
+    font-size: 22px;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .use-case-title {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .use-case-items {
+    padding: 16px 24px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 24px;
+  }
+
+  .use-case-item {
+    font-size: 14px;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--paper-deep);
+  }
+
+  .use-case-item::before {
+    content: '◆';
+    color: var(--gold);
+    font-size: 8px;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  /* ─── PROCESS FLOW ─── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 24px 0;
+    position: relative;
+  }
+
+  .flow::before {
+    content: '';
+    position: absolute;
+    top: 24px;
+    bottom: 24px;
+    right: 23px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--gold), var(--accent-light));
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 12px 0;
+    position: relative;
+  }
+
+  .flow-dot {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gold);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .flow-content {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    flex: 1;
+    box-shadow: var(--shadow-sm);
+    margin-top: 4px;
+  }
+
+  .flow-title {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  .flow-desc {
+    font-size: 13px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+  }
+
+  /* ─── AGENTS SIMULTANEOUS BOX ─── */
+  .agents-row {
+    display: flex;
+    gap: 6px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+  }
+
+  .agent-chip {
+    background: var(--paper-warm);
+    border: 1px solid var(--paper-deep);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* ─── TIMELINE TABLE ─── */
+  .timeline-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+  }
+
+  .timeline-table thead tr {
+    background: var(--accent);
+    color: white;
+  }
+
+  .timeline-table th {
+    padding: 12px 20px;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .timeline-table tbody tr {
+    border-bottom: 1px solid var(--paper-deep);
+  }
+
+  .timeline-table td {
+    padding: 14px 20px;
+    font-size: 14px;
+    vertical-align: top;
+  }
+
+  .timeline-table td:first-child {
+    font-weight: 700;
+    color: var(--accent);
+    width: 100px;
+  }
+
+  .phase-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: var(--gold-pale);
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .timeline-week {
+    font-size: 12px;
+    color: var(--ink-muted);
+    font-weight: 600;
+  }
+
+  /* ─── COST CARDS ─── */
+  .cost-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 24px 0;
+  }
+
+  .cost-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .cost-card.highlight {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .cost-item {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .cost-card.highlight .cost-item { color: rgba(255,255,255,0.6); }
+
+  .cost-value {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--green);
+    line-height: 1;
+  }
+
+  .cost-card.highlight .cost-value { color: var(--gold-light); }
+  .cost-sub { font-size: 12px; color: var(--ink-muted); margin-top: 6px; }
+  .cost-card.highlight .cost-sub { color: rgba(255,255,255,0.5); }
+
+  /* ─── BENEFITS ─── */
+  .benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .benefit-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    gap: 16px;
+  }
+
+  .benefit-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: var(--paper-warm);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .benefit-title {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .benefit-desc {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+  }
+
+  .benefit-points {
+    margin-top: 8px;
+    list-style: none;
+  }
+
+  .benefit-points li {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    padding: 2px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .benefit-points li::before {
+    content: '✓';
+    color: var(--green);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ─── CALL TO ACTION ─── */
+  .cta-section {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-mid) 100%);
+    border-radius: 14px;
+    padding: 48px;
+    margin: 48px 0 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 70%, rgba(184,134,11,0.2) 0%, transparent 50%);
+  }
+
+  .cta-title {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-subtitle {
+    font-size: 16px;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-steps {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+  }
+
+  .cta-step {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 16px 24px;
+    min-width: 180px;
+    text-align: center;
+    margin: 6px;
+  }
+
+  .cta-step-num {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gold-light);
+    margin-bottom: 6px;
+  }
+
+  .cta-step-text {
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    font-weight: 500;
+  }
+
+  .cta-arrow {
+    color: var(--gold-light);
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    opacity: 0.5;
+  }
+
+  /* ─── FOOTER ─── */
+  .doc-footer {
+    background: var(--ink);
+    color: rgba(255,255,255,0.4);
+    padding: 28px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    margin-top: 60px;
+  }
+
+  .doc-footer-logo {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 16px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 700;
+  }
+
+  /* ─── DIVIDER ─── */
+  .gold-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 48px 0;
+    opacity: 0.4;
+  }
+
+  /* ─── TECH REQUIREMENTS ─── */
+  .tech-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 20px 0;
+  }
+
+  .tech-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .tech-num {
+    font-family: 'Frank Ruhl Libre', serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--paper-deep);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .tech-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .tech-desc {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+  }
+
+  /* ─── PRINT BUTTON ─── */
+  .print-btn {
+    position: fixed;
+    bottom: 32px;
+    left: 32px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 40px;
+    font-family: 'Heebo', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .print-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     COVER PAGE
+═══════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-watermark">SYNAPSE</div>
+
+  <div class="cover-top">
+    <div class="cover-logo-area">
+      <div class="cover-logo-icon">🧠</div>
+      <div class="cover-logo-text">סינאפס</div>
+    </div>
+    <div class="cover-badge">הצעת ייעול פנים-ארגוני</div>
+  </div>
+
+  <div class="cover-main">
+    <div class="cover-gold-line"></div>
+    <div class="cover-label">פלטפורמת אינטליגנציה קולקטיבית</div>
+    <div class="cover-title">מערכת<br><span>סינאפס</span></div>
+    <div class="cover-subtitle">
+      שילוב פלטפורמת חשיבה קולקטיבית מבוססת AI עם ה-LLM הפנימי הקיים בארגון — לשיפור איכות קבלת ההחלטות בכל הרמות.
+    </div>
+    <div class="cover-stats">
+      <div class="cover-stat">
+        <div class="cover-stat-num">6</div>
+        <div class="cover-stat-label">סוכני AI מתמחים</div>
+      </div>
+      <div class="cover-stat">
+        <div class="cover-stat-num">8</div>
+        <div class="cover-stat-label">שבועות לפריסה מלאה</div>
+      </div>
+      <div class="cover-stat">
+        <div class="cover-stat-num">0</div>
+        <div class="cover-stat-label">תלות בענן חיצוני</div>
+      </div>
+      <div class="cover-stat">
+        <div class="cover-stat-num">₪0</div>
+        <div class="cover-stat-label">עלות שוטפת</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover-bottom">
+    <div class="cover-meta">
+      <strong>תאריך הגשה</strong>
+      מרץ 2025
+    </div>
+    <div class="cover-meta" style="text-align:left">
+      <strong>סיווג</strong>
+      פנים-ארגוני בלבד
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     DOCUMENT BODY
+═══════════════════════════════════════════ -->
+<div class="doc-body">
+
+  <!-- ─── SECTION 1: תקציר מנהלים ─── -->
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">תקציר מנהלים</h2>
+  </div>
+
+  <div class="exec-summary">
+    <div class="exec-summary-label">● ● ● Executive Summary</div>
+    <p>
+      מערכת <strong>סינאפס</strong> היא פלטפורמה ויזואלית לפתרון בעיות מורכבות באמצעות <strong>6 סוכני AI מתמחים</strong> הפועלים בשיתוף פעולה. המערכת מנתחת דילמות ממספר זוויות בו-זמנית — ניתוח נתונים, אימות לוגי, חשיבה יצירתית, זיכרון ארגוני, תיאום עמדות וסינתזה — ומגיעה לקונצנזוס מנומק.<br><br>
+      ההצעה: לשלב את המערכת עם ה-LLM הפנימי הקיים בארגון, וליצור <strong>כלי חשיבה קולקטיבי</strong> זמין לכלל העובדים — ללא תלות באינטרנט חיצוני, תוך שמירה מלאה על אבטחת מידע.
+    </p>
+  </div>
+
+  <!-- ─── SECTION 2: הבעיה שאנחנו פותרים ─── -->
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">הבעיה שאנחנו פותרים</h2>
+  </div>
+
+  <p style="color:var(--ink-soft); margin-bottom:20px; font-size:15px;">
+    ארגונים רבים מתמודדים עם אתגרים ידועים בקבלת החלטות — תלות ביחידים, חזרה על טעויות, הטיות קוגניטיביות ועיכובים תהליכיים. מערכת סינאפס מציעה מענה ישיר לכל אחד מהם:
+  </p>
+
+  <table class="problem-table">
+    <thead>
+      <tr>
+        <th>האתגר</th>
+        <th>מצב קיים</th>
+        <th>עם סינאפס</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>החלטות מקצועיות מורכבות</td>
+        <td class="col-before">✗ נשענות על דעת יחיד או ישיבות ארוכות</td>
+        <td class="col-after">✔ 6 "מומחים וירטואליים" מנתחים מכל זווית תוך דקות</td>
+      </tr>
+      <tr>
+        <td>חזרה על טעויות</td>
+        <td class="col-before">✗ אין זיכרון ארגוני נגיש</td>
+        <td class="col-after">✔ סוכן "אקו" מזהה דפוסים חוזרים ומתריע</td>
+      </tr>
+      <tr>
+        <td>הטיה בקבלת החלטות</td>
+        <td class="col-before">✗ נטייה לפתרון הראשון שעולה</td>
+        <td class="col-after">✔ סוכן "סייפר" מאתגר הנחות, "אורקל" מבסס על נתונים</td>
+      </tr>
+      <tr>
+        <td>זמן קבלת החלטות</td>
+        <td class="col-before">✗ ישיבות, התכתבויות, עיכובים</td>
+        <td class="col-after">✔ תהליך אוטונומי עד קונצנזוס — שקוף ומתועד</td>
+      </tr>
+      <tr>
+        <td>תיעוד תהליכי חשיבה</td>
+        <td class="col-before">✗ לא קיים או חלקי</td>
+        <td class="col-after">✔ דוח HTML ויזואלי מלא נשמר אוטומטית</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ─── SECTION 3: ארכיטקטורת השילוב ─── -->
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">ארכיטקטורת השילוב</h2>
+  </div>
+
+  <div style="background:white; border:1px solid var(--border); border-radius:12px; padding:32px; margin:24px 0; box-shadow:var(--shadow-sm);">
+    <svg width="100%" viewBox="0 0 860 420" xmlns="http://www.w3.org/2000/svg" style="font-family:'Heebo',sans-serif; display:block;">
+      <defs>
+        <marker id="arrowB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#1a3a5c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+        <marker id="arrowG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#1a4a2a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+
+      <!-- Outer container: Internal Network -->
+      <rect x="20" y="20" width="820" height="380" rx="16" fill="#f0f4f8" stroke="#1a3a5c" stroke-width="1.5" stroke-dasharray="8 4"/>
+      <text x="40" y="48" font-size="12" font-weight="700" fill="#1a3a5c" letter-spacing="2" opacity="0.7">רשת פנימית ארגונית</text>
+
+      <!-- No internet badge -->
+      <rect x="620" y="28" width="200" height="28" rx="14" fill="#1a3a5c" opacity="0.9"/>
+      <text x="720" y="46" font-size="11" font-weight="600" fill="white" text-anchor="middle" letter-spacing="0.5">✗  ללא חיבור לאינטרנט</text>
+
+      <!-- ── Node: LLM פנימי ── -->
+      <rect x="540" y="90" width="200" height="88" rx="10" fill="#1a3a5c" stroke="#1a3a5c" stroke-width="1"/>
+      <rect x="540" y="90" width="200" height="28" rx="10" fill="#0f2540"/>
+      <rect x="540" y="104" width="200" height="14" rx="0" fill="#0f2540"/>
+      <text x="640" y="108" font-size="11" font-weight="600" fill="rgba(255,255,255,0.55)" text-anchor="middle" letter-spacing="1.5">LLM INTERNAL</text>
+      <text x="640" y="148" font-size="16" font-weight="700" fill="white" text-anchor="middle">LLM פנימי</text>
+      <text x="640" y="167" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="middle">On-Premise · לא ענן</text>
+
+      <!-- ── Node: Synapse App ── -->
+      <rect x="100" y="90" width="200" height="88" rx="10" fill="#1a3a5c" stroke="#1a3a5c" stroke-width="1"/>
+      <rect x="100" y="90" width="200" height="28" rx="10" fill="#0f2540"/>
+      <rect x="100" y="104" width="200" height="14" rx="0" fill="#0f2540"/>
+      <text x="200" y="108" font-size="11" font-weight="600" fill="rgba(255,255,255,0.55)" text-anchor="middle" letter-spacing="1.5">WEB APPLICATION</text>
+      <text x="200" y="148" font-size="16" font-weight="700" fill="white" text-anchor="middle">סינאפס App</text>
+      <text x="200" y="167" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="middle">Node.js · Nginx · React</text>
+
+      <!-- ── API Arrow left-to-right ── -->
+      <line x1="302" y1="120" x2="536" y2="120" stroke="#1a3a5c" stroke-width="1.5" fill="none" marker-end="url(#arrowB)"/>
+      <!-- API Arrow right-to-left -->
+      <line x1="538" y1="148" x2="304" y2="148" stroke="#1a3a5c" stroke-width="1.5" fill="none" marker-end="url(#arrowB)"/>
+      <!-- API label -->
+      <rect x="373" y="120" width="94" height="28" rx="6" fill="white" stroke="#b8860b" stroke-width="1"/>
+      <text x="420" y="138" font-size="12" font-weight="700" fill="#b8860b" text-anchor="middle" letter-spacing="1">REST API</text>
+
+      <!-- ── Node: Employee Browser ── -->
+      <rect x="100" y="248" width="200" height="88" rx="10" fill="white" stroke="#1a3a5c" stroke-width="1.5"/>
+      <text x="200" y="275" font-size="11" font-weight="600" fill="#1a3a5c" opacity="0.5" text-anchor="middle" letter-spacing="1.5">END USER</text>
+      <text x="200" y="305" font-size="16" font-weight="700" fill="#1a3a5c" text-anchor="middle">דפדפן העובד</text>
+      <text x="200" y="324" font-size="12" fill="#5a5f72" text-anchor="middle">כל עובד · כל דפדפן</text>
+
+      <!-- Arrow: Browser → Synapse -->
+      <line x1="200" y1="246" x2="200" y2="182" stroke="#1a4a2a" stroke-width="1.5" fill="none" marker-end="url(#arrowG)"/>
+      <rect x="148" y="205" width="104" height="24" rx="6" fill="white" stroke="#1a4a2a" stroke-width="0.8"/>
+      <text x="200" y="221" font-size="11" font-weight="600" fill="#1a4a2a" text-anchor="middle">HTTPS / Web</text>
+
+      <!-- ── Security panel via foreignObject for proper RTL ── -->
+      <rect x="545" y="248" width="250" height="118" rx="10" fill="#fafaf8" stroke="#e4dcd0" stroke-width="1"/>
+      <foreignObject x="545" y="248" width="250" height="118">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="direction:rtl;padding:12px 14px;font-family:Heebo,sans-serif;box-sizing:border-box;width:250px;">
+          <div style="font-size:10px;font-weight:700;color:#1a3a5c;letter-spacing:1.5px;margin-bottom:10px;opacity:0.6;">אבטחת מידע</div>
+          <div style="font-size:11.5px;color:#2a2d3a;margin-bottom:7px;display:flex;align-items:center;gap:6px;white-space:nowrap;"><span style="color:#1a4a2a;font-weight:700;">✓</span>אין קריאות לשרתים חיצוניים</div>
+          <div style="font-size:11.5px;color:#2a2d3a;margin-bottom:7px;display:flex;align-items:center;gap:6px;white-space:nowrap;"><span style="color:#1a4a2a;font-weight:700;">✓</span>אין שמירת מידע בענן</div>
+          <div style="font-size:11.5px;color:#2a2d3a;display:flex;align-items:center;gap:6px;white-space:nowrap;"><span style="color:#1a4a2a;font-weight:700;">✓</span>תואם מדיניות אבטחה קיימת</div>
+        </div>
+      </foreignObject>
+    </svg>
+  </div>
+
+  <div class="tech-list">
+    <div class="tech-card">
+      <div class="tech-num">01</div>
+      <div class="tech-title">שרת פנימי</div>
+      <div class="tech-desc">הרצת אפליקציית סינאפס — Node.js/Nginx, משאבים מינימליים, שימוש בשרת קיים</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-num">02</div>
+      <div class="tech-title">חיבור API פנימי</div>
+      <div class="tech-desc">התאמת נקודת קצה (endpoint) בלבד — החלפת מפתח API חיצוני בחיבור ל-LLM הפנימי</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-num">03</div>
+      <div class="tech-title">אימות (אופציונלי)</div>
+      <div class="tech-desc">אינטגרציה עם מערכת הזדהות קיימת — SSO / LDAP / Active Directory</div>
+    </div>
+  </div>
+
+  <!-- ─── SECTION 4: 6 הסוכנים ─── -->
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">6 הסוכנים — הצוות הוירטואלי</h2>
+  </div>
+
+  <p style="color:var(--ink-soft); margin-bottom:20px; font-size:15px;">
+    כל סוכן ממלא תפקיד ייחודי בתהליך — יחד הם יוצרים "צוות מומחים" שמכסה את כל זוויות הניתוח:
+  </p>
+
+  <div class="agents-grid">
+    <div class="agent-card" style="--agent-color:#1a3a5c">
+      <div class="agent-emoji">🔮</div>
+      <div class="agent-name">אורקל</div>
+      <div class="agent-role">אנליסט ראשי</div>
+      <div class="agent-desc">ניתוח נתונים, זיהוי מגמות, הערכות כמותיות והסתברותיות</div>
+      <span class="agent-value">החלטות מבוססות data</span>
+    </div>
+    <div class="agent-card" style="--agent-color:#2a5080">
+      <div class="agent-emoji">🔗</div>
+      <div class="agent-name">נקסוס</div>
+      <div class="agent-role">מרכז תקשורת</div>
+      <div class="agent-desc">חיבור בין תובנות, תיאום עמדות, גישור בין גישות שונות</div>
+      <span class="agent-value">מונע silos</span>
+    </div>
+    <div class="agent-card" style="--agent-color:#b8860b">
+      <div class="agent-emoji">⚡</div>
+      <div class="agent-name">פורג'</div>
+      <div class="agent-role">ממזג רעיונות</div>
+      <div class="agent-desc">פתרונות יצירתיים, חשיבה מחוץ לקופסה, אלטרנטיבות לא שגרתיות</div>
+      <span class="agent-value">מעודד חדשנות</span>
+    </div>
+    <div class="agent-card" style="--agent-color:#1a4a2a">
+      <div class="agent-emoji">📡</div>
+      <div class="agent-name">אקו</div>
+      <div class="agent-role">זיכרון קולקטיבי</div>
+      <div class="agent-desc">זיהוי דפוסים היסטוריים, למידה מהעבר, זיהוי תקדימים</div>
+      <span class="agent-value">מונע חזרה על טעויות</span>
+    </div>
+    <div class="agent-card" style="--agent-color:#6b1a1a">
+      <div class="agent-emoji">🔐</div>
+      <div class="agent-name">סייפר</div>
+      <div class="agent-role">מאמת לוגי</div>
+      <div class="agent-desc">ספקן קונסטרוקטיבי, בדיקת הנחות, זיהוי חולשות בהיגיון</div>
+      <span class="agent-value">מזהה כשלים מראש</span>
+    </div>
+    <div class="agent-card" style="--agent-color:#4a2a6b">
+      <div class="agent-emoji">🧠</div>
+      <div class="agent-name">סייג'</div>
+      <div class="agent-role">מסנתז חוכמה</div>
+      <div class="agent-desc">מסקנות סופיות, אינטגרציה בין כל הסוכנים, קונצנזוס פעיל</div>
+      <span class="agent-value">תוצאה ברורה ופעילה</span>
+    </div>
+  </div>
+
+  <!-- ─── SECTION 5: תחומי שימוש ─── -->
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">תחומי שימוש בארגון</h2>
+  </div>
+
+  <div class="use-case-group">
+    <div class="use-case-header">
+      <div class="use-case-icon">🔧</div>
+      <div class="use-case-title">מקצועי-טכני</div>
+    </div>
+    <div class="use-case-items">
+      <div class="use-case-item">בחירת ארכיטקטורה ומבנה מערכת</div>
+      <div class="use-case-item">הערכת סיכונים בשינויי תשתית</div>
+      <div class="use-case-item">תכנון מעבר בין טכנולוגיות</div>
+      <div class="use-case-item">ניתוח תקלות מורכבות (RCA)</div>
+    </div>
+  </div>
+
+  <div class="use-case-group">
+    <div class="use-case-header">
+      <div class="use-case-icon">📋</div>
+      <div class="use-case-title">ניהולי-ארגוני</div>
+    </div>
+    <div class="use-case-items">
+      <div class="use-case-item">תכנון אסטרטגי ותעדוף פרויקטים</div>
+      <div class="use-case-item">הערכת ספקים וכלים</div>
+      <div class="use-case-item">ניהול שינויים ארגוניים</div>
+      <div class="use-case-item">חלוקת משאבים בין צוותים</div>
+    </div>
+  </div>
+
+  <div class="use-case-group">
+    <div class="use-case-header">
+      <div class="use-case-icon">👤</div>
+      <div class="use-case-title">אישי-מקצועי — לכל עובד</div>
+    </div>
+    <div class="use-case-items">
+      <div class="use-case-item">התלבטות בין מסלולי קידום</div>
+      <div class="use-case-item">תכנון למידה והתפתחות מקצועית</div>
+      <div class="use-case-item">איזון עבודה-חיים</div>
+      <div class="use-case-item">החלטות כלכליות אישיות</div>
+    </div>
+  </div>
+
+  <!-- ─── SECTION 6: תהליך עבודה ─── -->
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2 class="section-title">תהליך עבודה טיפוסי</h2>
+  </div>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-dot">1</div>
+      <div class="flow-content">
+        <div class="flow-title">הגדרת הבעיה</div>
+        <div class="flow-desc">העובד מגדיר את הדילמה בשפה חופשית או בוחר מקטגוריה מוכנה. המערכת כוללת 10 קטגוריות עם 40 דוגמאות מובנות.</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-dot">2</div>
+      <div class="flow-content">
+        <div class="flow-title">ניתוח בו-זמני ע"י 6 הסוכנים</div>
+        <div class="flow-desc">כל 6 הסוכנים עובדים במקביל, כל אחד מזווית המומחיות שלו:</div>
+        <div class="agents-row">
+          <span class="agent-chip">🔮 אורקל</span>
+          <span class="agent-chip">🔗 נקסוס</span>
+          <span class="agent-chip">⚡ פורג'</span>
+          <span class="agent-chip">📡 אקו</span>
+          <span class="agent-chip">🔐 סייפר</span>
+          <span class="agent-chip">🧠 סייג'</span>
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-dot">3</div>
+      <div class="flow-content">
+        <div class="flow-title">דיאלוג בין הסוכנים</div>
+        <div class="flow-desc">הסוכנים מתקשרים, מגיבים זה לזה, מאתגרים ומחזקים עמדות — בתהליך שקוף הנצפה בזמן אמת.</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-dot">4</div>
+      <div class="flow-content">
+        <div class="flow-title">קונצנזוס (סף ביטחון 70%)</div>
+        <div class="flow-desc">המערכת מגיעה להסכמה מנומקת עם רמת ביטחון מדידה. אין "קופסה שחורה" — כל שלב בתהליך גלוי.</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-dot">5</div>
+      <div class="flow-content">
+        <div class="flow-title">דוח ויזואלי + משוב</div>
+        <div class="flow-desc">סיכום מובנה להורדה בפורמט HTML. העובד יכול לשלוח משוב ולהפעיל מחזור חשיבה נוסף.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gold-divider"></div>
+
+  <!-- ─── SECTION 7: יתרונות עיקריים ─── -->
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2 class="section-title">יתרונות עיקריים</h2>
+  </div>
+
+  <div class="benefits-grid">
+    <div class="benefit-card">
+      <div class="benefit-icon">🔒</div>
+      <div>
+        <div class="benefit-title">אבטחת מידע מלאה</div>
+        <ul class="benefit-points">
+          <li>אפס חשיפה חיצונית — הכל ברשת הפנימית</li>
+          <li>ללא העברת מידע לענן</li>
+          <li>תואם מדיניות אבטחה קיימת</li>
+          <li>אין צורך בפתיחת פורטים</li>
+        </ul>
+      </div>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-icon">⚡</div>
+      <div>
+        <div class="benefit-title">ערך מיידי</div>
+        <ul class="benefit-points">
+          <li>פריסה מהירה — ימים ולא חודשים</li>
+          <li>ממשק אינטואיטיבי בעברית</li>
+          <li>10 קטגוריות + 40 דוגמאות מוכנות</li>
+          <li>אפס עקומת למידה</li>
+        </ul>
+      </div>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-icon">📊</div>
+      <div>
+        <div class="benefit-title">שקיפות מלאה</div>
+        <ul class="benefit-points">
+          <li>תהליך החשיבה גלוי בזמן אמת</li>
+          <li>ויזואליזציה תלת-ממדית של הרשת</li>
+          <li>דוחות HTML מרשימים לשיתוף</li>
+          <li>לא "קופסה שחורה" — ניתן לבקר ולאמת</li>
+        </ul>
+      </div>
+    </div>
+    <div class="benefit-card">
+      <div class="benefit-icon">🎯</div>
+      <div>
+        <div class="benefit-title">החלטות טובות יותר</div>
+        <ul class="benefit-points">
+          <li>6 נקודות מבט מקצועיות במקום אחת</li>
+          <li>אימות לוגי אוטומטי</li>
+          <li>זיהוי נקודות עיוורות</li>
+          <li>זיכרון ארגוני מצטבר</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SECTION 8: תוכנית יישום ─── -->
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h2 class="section-title">תוכנית יישום מוצעת</h2>
+  </div>
+
+  <table class="timeline-table">
+    <thead>
+      <tr>
+        <th>שלב</th>
+        <th>פעילות</th>
+        <th>תוצרים</th>
+        <th>לוח זמנים</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <span class="phase-badge">POC</span>
+        </td>
+        <td>התקנה על שרת פנימי, חיבור ל-LLM, אינטגרציה ראשונית</td>
+        <td style="font-size:13px;color:var(--ink-muted)">מערכת עובדת בסביבה מבוקרת עם 5 משתמשי בדיקה</td>
+        <td class="timeline-week">שבוע 1–2</td>
+      </tr>
+      <tr>
+        <td>
+          <span class="phase-badge">פיילוט</span>
+        </td>
+        <td>פתיחה לצוות/מחלקה אחת, איסוף משוב מובנה</td>
+        <td style="font-size:13px;color:var(--ink-muted)">דו"ח משוב, רשימת תקלות ובקשות שיפור</td>
+        <td class="timeline-week">שבוע 3–4</td>
+      </tr>
+      <tr>
+        <td>
+          <span class="phase-badge">התאמה</span>
+        </td>
+        <td>שיפור prompts לפי אופי הארגון, הוספת קטגוריות ייעודיות</td>
+        <td style="font-size:13px;color:var(--ink-muted)">גרסה מותאמת ארגון עם קטגוריות פנימיות</td>
+        <td class="timeline-week">שבוע 5–6</td>
+      </tr>
+      <tr>
+        <td>
+          <span class="phase-badge">פריסה</span>
+        </td>
+        <td>פתיחה לכלל העובדים, הנחיה קצרה</td>
+        <td style="font-size:13px;color:var(--ink-muted)">מערכת בייצור, 100% עובדים עם גישה</td>
+        <td class="timeline-week">שבוע 7–8</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ─── SECTION 9: עלויות ─── -->
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <h2 class="section-title">ניתוח עלויות</h2>
+  </div>
+
+  <div class="cost-grid">
+    <div class="cost-card">
+      <div class="cost-item">תשתית שרת</div>
+      <div class="cost-value">₪0</div>
+      <div class="cost-sub">שימוש בשרת פנימי קיים</div>
+    </div>
+    <div class="cost-card">
+      <div class="cost-item">LLM</div>
+      <div class="cost-value">₪0</div>
+      <div class="cost-sub">שימוש ב-LLM פנימי קיים</div>
+    </div>
+    <div class="cost-card">
+      <div class="cost-item">רישיונות תוכנה</div>
+      <div class="cost-value">₪0</div>
+      <div class="cost-sub">קוד פתוח בלבד</div>
+    </div>
+    <div class="cost-card highlight">
+      <div class="cost-item">עלות סה"כ</div>
+      <div class="cost-value">2–3 ימים</div>
+      <div class="cost-sub">זמן מפתח לחיבור API בלבד</div>
+    </div>
+  </div>
+
+  <p style="background:var(--gold-pale); border-right:3px solid var(--gold); padding:14px 20px; border-radius:6px; font-size:14px; color:var(--ink-soft); margin-top:8px;">
+    <strong style="color:var(--gold)">✦ שורה תחתונה:</strong> &nbsp;
+    מדובר בהשקעה חד-פעמית של 2–3 ימי עבודה מפתח לצורך חיבור ה-API. לאחר מכן — אפס עלות שוטפת, אפס תלות ספקים חיצוניים.
+  </p>
+
+  <!-- ─── CTA ─── -->
+  <div class="cta-section">
+    <div class="cta-title">הצעד הבא</div>
+    <div class="cta-subtitle">שלושה שלבים פשוטים להתנעת הפרויקט</div>
+    <div class="cta-steps">
+      <div class="cta-step">
+        <div class="cta-step-num">01</div>
+        <div class="cta-step-text">תיאום הדגמה חיה למנהלים</div>
+      </div>
+      <div class="cta-arrow">←</div>
+      <div class="cta-step">
+        <div class="cta-step-num">02</div>
+        <div class="cta-step-text">אישור POC + הקצאת שרת</div>
+      </div>
+      <div class="cta-arrow">←</div>
+      <div class="cta-step">
+        <div class="cta-step-num">03</div>
+        <div class="cta-step-text">שבועיים לפריסה ראשונית</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end doc-body -->
+
+<!-- ─── FOOTER ─── -->
+<div class="doc-footer">
+  <div class="doc-footer-logo">🧠 סינאפס — אינטליגנציה קולקטיבית</div>
+  <div>פנים-ארגוני בלבד &nbsp;|&nbsp; מרץ 2025</div>
+  <div>גרסה 1.0</div>
+</div>
+
+<!-- PRINT BUTTON -->
+<button class="print-btn no-print" onclick="window.print()">
+  🖨️ הדפסה / שמירה כ-PDF
+</button>
+
+</body>
+</html>
