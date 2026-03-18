@@ -116,7 +116,7 @@ export default function NexusNetworkViz({ thought }: NexusNetworkVizProps) {
                   cx={cx} cy={cy} r={isActive ? 5 : 3.5}
                   fill={a.color}
                   opacity={isActive ? 1 : 0.6}
-                  animate={isActive ? { r: [3.5, 5, 3.5], opacity: [0.6, 1, 0.6] } : {}}
+                  animate={isActive ? { scale: [0.8, 1.2, 0.8], opacity: [0.6, 1, 0.6] } : {}}
                   transition={{ duration: 1.2, repeat: Infinity }}
                 />
                 <text
@@ -136,7 +136,7 @@ export default function NexusNetworkViz({ thought }: NexusNetworkVizProps) {
             cx={50} cy={43} r={4}
             fill="#CE93D8"
             opacity={0.8}
-            animate={{ r: [3, 4.5, 3], opacity: [0.6, 1, 0.6] }}
+            animate={{ scale: [0.75, 1.1, 0.75], opacity: [0.6, 1, 0.6] }}
             transition={{ duration: 2, repeat: Infinity }}
           />
         </svg>

@@ -1,5 +1,5 @@
 import { AGENTS } from './agentDefinitions';
-import { generateThought, getThoughtCategory, generateConsensusSummary, generateConsensusThought } from '../hooks/useAgentThought';
+import { generateThought, getThoughtCategory, generateConsensusSummary, generateConsensusThought, getSimulatedThought as getSimulatedReply } from '../hooks/useAgentThought';
 import { useSimStore } from '../store/useSimStore';
 import { playThoughtPing, playConnectionSweep, playConsensusChime } from '../hooks/useSynapseAudio';
 
@@ -26,7 +26,20 @@ function pickReceivers(senderId: string, count: number): string[] {
   return shuffled.slice(0, count).map((a) => a.id);
 }
 
+// Prevent overlapping ticks — skip if previous tick is still processing
+let tickInProgress = false;
+
 async function executeTick() {
+  if (tickInProgress) return;
+  tickInProgress = true;
+  try {
+    await executeTickInner();
+  } finally {
+    tickInProgress = false;
+  }
+}
+
+async function executeTickInner() {
   const store = useSimStore.getState();
   const senderId = pickWeightedAgent();
   const receivers = pickReceivers(senderId, 1 + (Math.random() > 0.6 ? 1 : 0));
@@ -95,21 +108,21 @@ async function executeTick() {
       useSimStore.getState().removeActiveEdge(senderId, receiverId);
     }, 2000);
 
-    // Receiver reacts after delay
-    setTimeout(async () => {
+    // Receiver reacts after delay — uses template (not API) to avoid queue overload
+    setTimeout(() => {
       const recvStore = useSimStore.getState();
-      const replyOtherIds = AGENTS.filter((a) => a.id !== receiverId).map((a) => a.id);
       recvStore.setAgentThinking(receiverId, true);
       recvStore.updateLastActive(receiverId);
 
-      const reply = await generateThought(receiverId, {
+      // Receiver always uses simulated thought (template) to preserve API budget for sender
+      const replyOtherIds = AGENTS.filter((a) => a.id !== receiverId).map((a) => a.id);
+      const reply = getSimulatedReply(receiverId, {
         currentProblem: recvStore.currentProblem,
         otherAgentIds: replyOtherIds,
       });
 
-      const replyStore = useSimStore.getState();
-      replyStore.setAgentThought(receiverId, reply);
-      replyStore.setAgentThinking(receiverId, false);
+      recvStore.setAgentThought(receiverId, reply);
+      recvStore.setAgentThinking(receiverId, false);
     }, 1500);
   }
 
@@ -181,12 +194,12 @@ async function triggerConsensusCheck() {
         const st = useSimStore.getState();
         const agentLines = AGENTS.map((a) => {
           const ag = st.agents[a.id];
-          return `**${a.name}** (${a.role}): ${ag?.currentThought ?? '—'}`;
-        }).join('\n- ');
-        const localSummary = `# סיכום קונצנזוס: ${st.currentProblem}\n\n## תובנות הסוכנים\n- ${agentLines}\n\n## מסקנה\nהסוכנים הגיעו להסכמה קולקטיבית עם ביטחון ממוצע של ${st.globalConfidence}%.`;
+          return `- **${a.name}** (${a.role}, ביטחון ${ag?.confidence ?? 0}%): ${ag?.currentThought ?? '—'}`;
+        }).join('\n');
+        const localSummary = `# סיכום קונצנזוס: ${st.currentProblem}\n\n## תובנות הסוכנים\n${agentLines}\n\n## 🎯 שורה תחתונה\nהסוכנים הגיעו להסכמה קולקטיבית עם ביטחון ממוצע של ${st.globalConfidence}%. זהו מצב סימולציה — לסיכום עם המלצה חד-משמעית, הפעל מצב AI אמיתי.`;
         useSimStore.getState().setSolutionSummary(localSummary);
       } else {
-        // API mode: generate a structured summary via Claude
+        // API mode: generate a structured summary via LLM
         useSimStore.getState().pauseSolving();
 
         try {
@@ -194,8 +207,14 @@ async function triggerConsensusCheck() {
           useSimStore.getState().setSolutionSummary(summary);
         } catch (err) {
           console.error('Failed to generate consensus summary:', err);
+          // Use generateConsensusSummary's built-in fallback
+          const st = useSimStore.getState();
+          const agentLines = AGENTS.map((a) => {
+            const ag = st.agents[a.id];
+            return `- **${a.name}** (${a.role}): ${ag?.currentThought ?? '—'}`;
+          }).join('\n');
           useSimStore.getState().setSolutionSummary(
-            `הסוכנים הגיעו להסכמה בנושא "${s.currentProblem}" עם ביטחון ממוצע של ${s.globalConfidence}%.`
+            `# סיכום קונצנזוס: ${s.currentProblem}\n\n## תובנות הסוכנים\n${agentLines}\n\n## 🎯 שורה תחתונה\nהסוכנים הגיעו להסכמה בנושא "${s.currentProblem}" עם ביטחון ממוצע של ${s.globalConfidence}%. קריאת ה-API לסיכום נכשלה — ראה תובנות הסוכנים למעלה.`
           );
         }
       }

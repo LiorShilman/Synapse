@@ -11,13 +11,15 @@ import SimToolbar from '../dashboard/SimToolbar';
 import StatusBar from './StatusBar';
 import ConsensusExplosion from '../events/ConsensusExplosion';
 import GuidePage from '../guide/GuidePage';
+import ApiSettingsModal from '../settings/ApiSettingsModal';
 
 export default function AppShell() {
   const [showGuide, setShowGuide] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   return (
     <div className="app-shell">
-      <StatusBar onOpenGuide={() => setShowGuide(true)} />
+      <StatusBar onOpenGuide={() => setShowGuide(true)} onOpenSettings={() => setShowSettings(true)} />
       <div className="main-content">
         {/* Problem Input — separate element for mobile reordering */}
         <div className="input-panel">
@@ -52,6 +54,7 @@ export default function AppShell() {
       <ConsensusExplosion />
 
       {showGuide && <GuidePage onClose={() => setShowGuide(false)} />}
+      {showSettings && <ApiSettingsModal onClose={() => setShowSettings(false)} />}
     </div>
   );
 }

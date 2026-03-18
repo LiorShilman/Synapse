@@ -6,7 +6,57 @@ function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function getSimulatedThought(
+// ─── Global API Rate Limiter ───
+// Anthropic free tier: 30,000 input tokens/min.
+// Each call ~900-2000 tokens → space calls ≥3.5s apart (max ~17 calls/min ≈ 20K tokens)
+const API_MIN_INTERVAL_MS = 3500;
+let apiLastCallTime = 0;
+const apiQueue: Array<{
+  fn: () => Promise<string | null>;
+  resolve: (v: string | null) => void;
+  priority: number; // higher = more important
+}> = [];
+let apiQueueRunning = false;
+
+async function drainApiQueue() {
+  if (apiQueueRunning) return;
+  apiQueueRunning = true;
+  while (apiQueue.length > 0) {
+    // Sort by priority descending so consensus summary goes first
+    apiQueue.sort((a, b) => b.priority - a.priority);
+    const item = apiQueue.shift()!;
+    const now = Date.now();
+    const elapsed = now - apiLastCallTime;
+    if (elapsed < API_MIN_INTERVAL_MS) {
+      await new Promise((r) => setTimeout(r, API_MIN_INTERVAL_MS - elapsed));
+    }
+    apiLastCallTime = Date.now();
+    try {
+      const result = await item.fn();
+      item.resolve(result);
+    } catch {
+      item.resolve(null);
+    }
+  }
+  apiQueueRunning = false;
+}
+
+const API_QUEUE_MAX = 6; // max queued items — drop lowest-priority if full
+
+function enqueueApiCall(fn: () => Promise<string | null>, priority = 0): Promise<string | null> {
+  return new Promise((resolve) => {
+    // If queue is full, drop the lowest-priority item (resolve it as null)
+    if (apiQueue.length >= API_QUEUE_MAX) {
+      apiQueue.sort((a, b) => b.priority - a.priority);
+      const dropped = apiQueue.pop();
+      if (dropped) dropped.resolve(null);
+    }
+    apiQueue.push({ fn, resolve, priority });
+    drainApiQueue();
+  });
+}
+
+export function getSimulatedThought(
   agentId: string,
   context: { currentProblem: string; otherAgentIds: string[] }
 ): string {
@@ -26,10 +76,10 @@ function getSimulatedThought(
 
 function buildConversationContext(agentId: string): string {
   const store = useSimStore.getState();
-  // Get recent messages involving this agent (last 15 messages for deeper context)
+  // Get recent messages involving this agent (limit to 6 to reduce token usage)
   const relevantMessages = store.messages
     .filter((m) => m.fromId === agentId || m.toId === agentId || m.fromId === 'user')
-    .slice(0, 15);
+    .slice(0, 6);
 
   if (relevantMessages.length === 0) return '';
 
@@ -38,7 +88,7 @@ function buildConversationContext(agentId: string): string {
     .map((m) => {
       const fromDef = AGENTS.find((a) => a.id === m.fromId);
       const fromName = m.fromId === 'user' ? 'משתמש' : (fromDef?.name ?? m.fromId);
-      return `[${fromName}]: ${m.text}`;
+      return `[${fromName}]: ${m.text.slice(0, 200)}`;
     });
 
   return '\n\nהיסטוריית שיחה אחרונה:\n' + lines.join('\n');
@@ -71,7 +121,64 @@ function buildSystemPrompt(agentId: string): string {
 - אם חסר לך מידע קריטי לניתוח (מספרים, נתונים, הקשר חשוב), התחל את התשובה עם התג [שאלה למשתמש: ...] ובתוכו שאלה ממוקדת למשתמש. השתמש בזה רק כשבאמת חסר מידע חיוני${store.noMoreQuestions ? '\n- חשוב מאוד: המשתמש ביקש לא לשאול עוד שאלות. אל תשתמש בתג [שאלה למשתמש]. עבוד עם הנתונים שיש לך והגע למסקנה הטובה ביותר האפשרית.' : ''}`;
 }
 
-async function callClaudeAPI(
+async function callLlmApi(
+  systemPrompt: string,
+  userMessage: string,
+  maxTokens: number
+): Promise<string | null> {
+  const { provider, apiKey, model, endpoint } = useSimStore.getState().llmConfig;
+
+  if (provider === 'openai') {
+    const url = `${endpoint.replace(/\/+$/, '')}/v1/chat/completions`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: maxTokens,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage },
+        ],
+      }),
+    });
+    if (!response.ok) {
+      console.error('OpenAI API error:', await response.text());
+      return null;
+    }
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content ?? null;
+  }
+
+  // Anthropic (default)
+  const url = `${endpoint.replace(/\/+$/, '')}/v1/messages`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+    }),
+  });
+  if (!response.ok) {
+    console.error('Anthropic API error:', await response.text());
+    return null;
+  }
+  const data = await response.json();
+  return data.content?.[0]?.text ?? null;
+}
+
+async function callAgentAPI(
   agentId: string,
   context: { currentProblem: string; otherAgentIds: string[] }
 ): Promise<string> {
@@ -83,37 +190,14 @@ async function callClaudeAPI(
     : `חשוב על הבעיה הבאה: ${context.currentProblem}`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': import.meta.env.VITE_ANTHROPIC_API_KEY as string,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 200,
-        system: systemPrompt,
-        messages: [
-          {
-            role: 'user',
-            content: userMessage,
-          },
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      console.error('Claude API error:', err);
-      return getSimulatedThought(agentId, context);
-    }
-
-    const data = await response.json();
-    return data.content[0].text;
+    // Queue with normal priority — rate limiter spaces calls apart
+    const result = await enqueueApiCall(
+      () => callLlmApi(systemPrompt, userMessage, 200),
+      0
+    );
+    return result ?? getSimulatedThought(agentId, context);
   } catch (error) {
-    console.error('Claude API call failed:', error);
+    console.error('LLM API call failed:', error);
     return getSimulatedThought(agentId, context);
   }
 }
@@ -127,13 +211,14 @@ export async function generateConsensusSummary(): Promise<string> {
     return `${a.name} (${a.role}, ביטחון: ${state?.confidence ?? 0}%): ${state?.currentThought ?? 'אין מחשבה'}`;
   }).join('\n');
 
+  // Trim messages to avoid oversized payload; limit each to 200 chars, max 8 messages
   const recentMessages = store.messages
-    .slice(0, 20)
+    .slice(0, 8)
     .reverse()
     .map((m) => {
       const fromDef = AGENTS.find((a) => a.id === m.fromId);
       const fromName = m.fromId === 'user' ? 'משתמש' : (fromDef?.name ?? m.fromId);
-      return `[${fromName}]: ${m.text}`;
+      return `[${fromName}]: ${m.text.slice(0, 200)}`;
     })
     .join('\n');
 
@@ -142,28 +227,37 @@ export async function generateConsensusSummary(): Promise<string> {
 
 הנחיות:
 - כתוב בעברית תקנית
-- צור סיכום מובנה עם כותרות
-- כלול: ניתוח הבעיה, תובנות עיקריות, פתרון מוצע, סיכוני ביצוע
+- צור סיכום מובנה עם הכותרות הבאות (בדיוק):
+  ## ניתוח הבעיה
+  ## תובנות עיקריות
+  ## 🎯 שורה תחתונה — המלצת המערכת
+  ## סיכוני ביצוע
+- בסעיף "שורה תחתונה" כתוב תשובה חד-משמעית וברורה לשאלה/דילמה. אל תתחמק — גם אם הנושא מורכב, המערכת חייבת לספק המלצה ברורה עם הנמקה
 - ציין תרומה ייחודית של כל סוכן
-- סיכום של 150-300 מילים`;
+- סיכום של 200-400 מילים`;
 
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': import.meta.env.VITE_ANTHROPIC_API_KEY as string,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 800,
-        system: systemPrompt,
-        messages: [
-          {
-            role: 'user',
-            content: `סכם את תהליך פתרון הבעיה הבאה:
+  // Build a structured local fallback from agent state
+  const agentLines = AGENTS.map((a) => {
+    const state = store.agents[a.id];
+    return `- **${a.name}** (${a.role}, ביטחון ${state?.confidence ?? 0}%): ${state?.currentThought ?? '—'}`;
+  }).join('\n');
+
+  // Find the most substantive AI-generated messages (filter out template/consensus noise)
+  const noisePatterns = ['מחזור', 'מטא-אסטרטגי', 'בדיקת קונצנזוס', 'מרכז תובנות:', 'אימות לוגי', 'שומר קונצנזוס:', 'סוקר את מצב', 'אתה יוזם', 'אתה מרכז', 'אתה מאמת', 'אתה שומר'];
+  const substantiveMessages = store.messages
+    .filter((m) => m.text.length > 80 && !noisePatterns.some((p) => m.text.startsWith(p)))
+    .slice(0, 6)
+    .map((m) => {
+      const fromDef = AGENTS.find((a) => a.id === m.fromId);
+      return `- **${fromDef?.name ?? m.fromId}**: ${m.text.slice(0, 400)}`;
+    }).join('\n');
+
+  const apiNote = store.isApiMode
+    ? 'קריאת ה-API לסיכום נכשלה — להלן תובנות הסוכנים מהדיון.'
+    : 'לסיכום מפורט יותר עם המלצה חד-משמעית, הפעל מצב AI אמיתי.';
+  const localFallback = `# סיכום קונצנזוס: ${store.currentProblem}\n\n## תובנות מרכזיות מהדיון\n${substantiveMessages || '(לא נמצאו תובנות מהותיות)'}\n\n## תובנות הסוכנים\n${agentLines}\n\n## 🎯 שורה תחתונה\nהסוכנים הגיעו להסכמה קולקטיבית עם ביטחון ממוצע של ${store.globalConfidence}%. ${apiNote}`;
+
+  const userMessage = `סכם את תהליך פתרון הבעיה הבאה:
 
 בעיה: ${store.currentProblem}
 
@@ -171,95 +265,47 @@ export async function generateConsensusSummary(): Promise<string> {
 ${agentThoughts}
 
 היסטוריית דיון:
-${recentMessages}`,
-          },
-        ],
-      }),
-    });
+${recentMessages}`;
 
-    if (!response.ok) {
-      return `סיכום אוטומטי: הסוכנים הגיעו להסכמה בנושא "${store.currentProblem}" עם ביטחון ממוצע של ${store.globalConfidence}%.`;
+  // Use the rate-limited queue with high priority (jumps ahead of agent calls)
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      if (attempt > 0) {
+        console.log('[Synapse] Retrying consensus summary in 15s...');
+        await new Promise((r) => setTimeout(r, 15000));
+      }
+      console.log(`[Synapse] Generating consensus summary (attempt ${attempt + 1})...`);
+      const result = await enqueueApiCall(
+        () => callLlmApi(systemPrompt, userMessage, 1200),
+        10 // high priority — jumps ahead of queued agent calls
+      );
+      if (result) return result;
+      console.warn(`[Synapse] Consensus summary API returned null (attempt ${attempt + 1})`);
+    } catch (err) {
+      console.error(`[Synapse] Consensus summary failed (attempt ${attempt + 1}):`, err);
     }
-
-    const data = await response.json();
-    return data.content[0].text;
-  } catch {
-    return `סיכום אוטומטי: הסוכנים הגיעו להסכמה בנושא "${store.currentProblem}" עם ביטחון ממוצע של ${store.globalConfidence}%.`;
   }
+  console.warn('[Synapse] Using local fallback for consensus summary');
+  return localFallback;
 }
 
 export async function generateConsensusThought(
-  agentId: string,
+  _agentId: string,
   role: 'initiate' | 'coordinate' | 'validate-pass' | 'validate-fail' | 'store'
 ): Promise<string> {
   const store = useSimStore.getState();
-  const agentDef = AGENTS.find((a) => a.id === agentId);
-  if (!agentDef) return 'מעבד...';
 
-  const agentThoughts = AGENTS.map((a) => {
-    const state = store.agents[a.id];
-    return `${a.name} (${a.role}, ביטחון: ${state?.confidence ?? 0}%): ${state?.currentThought ?? 'אין מחשבה'}`;
-  }).join('\n');
-
-  const roleInstructions: Record<string, string> = {
-    'initiate': 'אתה יוזם בדיקת קונצנזוס. סכם בקצרה את מצב הדיון וקרא לסוכנים האחרים להגיש את התובנות שלהם. התייחס לבעיה הספציפית ולנקודות שעלו.',
-    'coordinate': 'אתה מרכז את תהליך הקונצנזוס. תאר אילו נקודות הסכמה ומחלוקת אתה רואה בין הסוכנים, והתייחס לבעיה הספציפית.',
-    'validate-pass': 'אתה מאמת את הקונצנזוס. בדוק את הלוגיקה של הטיעונים שהועלו ואשר שהם עומדים בביקורת. ציין נקודות חוזק ספציפיות.',
-    'validate-fail': 'אתה מאמת את הקונצנזוס ומצאת שעדיין לא הושג. ציין מה עדיין חסר או לא עקבי בטיעונים, והתייחס לנקודות ספציפיות.',
-    'store': 'אתה שומר את הקונצנזוס בזיכרון הקולקטיבי. סכם את התובנה המרכזית שהושגה והסבר למה היא חשובה.',
+  const fallbacks: Record<string, string> = {
+    'initiate': `בדיקת קונצנזוס: סוקר את מצב הדיון בנושא ${store.currentProblem}`,
+    'coordinate': `מרכז תובנות: מזהה נקודות הסכמה בין הסוכנים בנושא ${store.currentProblem}`,
+    'validate-pass': `אימות לוגי הושלם ✓ — הטיעונים עקביים ומבוססים`,
+    'validate-fail': `אימות לוגי: סף הביטחון טרם הושג — נדרש דיון נוסף`,
+    'store': `שומר קונצנזוס: התובנות בנושא ${store.currentProblem} נשמרו בזיכרון הקולקטיבי`,
   };
 
-  if (!(store.isApiMode && store.mode === 'solving')) {
-    // Simulation mode fallback
-    const fallbacks: Record<string, string> = {
-      'initiate': `בדיקת קונצנזוס: סוקר את מצב הדיון בנושא ${store.currentProblem}`,
-      'coordinate': `מרכז תובנות: מזהה נקודות הסכמה בין הסוכנים בנושא ${store.currentProblem}`,
-      'validate-pass': `אימות לוגי הושלם ✓ — הטיעונים עקביים ומבוססים`,
-      'validate-fail': `אימות לוגי: סף הביטחון טרם הושג — נדרש דיון נוסף`,
-      'store': `שומר קונצנזוס: התובנות בנושא ${store.currentProblem} נשמרו בזיכרון הקולקטיבי`,
-    };
-    return fallbacks[role] ?? 'מעבד...';
-  }
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': import.meta.env.VITE_ANTHROPIC_API_KEY as string,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 200,
-        system: `אתה ${agentDef.name}, סוכן AI המתמחה ב${agentDef.role}.
-${roleInstructions[role]}
-
-הבעיה הנוכחית: ${store.currentProblem}
-
-הנחיות:
-- ענה תמיד בעברית תקנית
-- תגובה של 1-2 משפטים מקסימום
-- התייחס לתוכן הספציפי של הדיון, לא במשפטים גנריים`,
-        messages: [
-          {
-            role: 'user',
-            content: `מצב הסוכנים כרגע:\n${agentThoughts}`,
-          },
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      return roleInstructions[role] ?? 'מעבד...';
-    }
-
-    const data = await response.json();
-    return data.content[0].text;
-  } catch {
-    return roleInstructions[role] ?? 'מעבד...';
-  }
+  // Always use fallbacks for consensus-phase thoughts to preserve API budget
+  // for the important consensus summary call (avoids rate limiting)
+  return fallbacks[role] ?? 'מעבד...';
 }
 
 export async function generateThought(
@@ -269,7 +315,7 @@ export async function generateThought(
   const store = useSimStore.getState();
 
   if (store.isApiMode && store.mode === 'solving') {
-    return callClaudeAPI(agentId, context);
+    return callAgentAPI(agentId, context);
   }
 
   return getSimulatedThought(agentId, context);

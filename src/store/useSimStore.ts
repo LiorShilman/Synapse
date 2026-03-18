@@ -34,6 +34,34 @@ export interface ConsensusEvent {
 
 export type SimMode = 'simulation' | 'solving';
 
+export type LlmProvider = 'anthropic' | 'openai';
+
+export interface LlmConfig {
+  provider: LlmProvider;
+  apiKey: string;
+  model: string;
+  endpoint: string;
+}
+
+const LLM_STORAGE_KEY = 'synapse-llm-config';
+
+function loadLlmConfig(): LlmConfig {
+  try {
+    const saved = localStorage.getItem(LLM_STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch { /* ignore */ }
+  return {
+    provider: 'anthropic',
+    apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY ?? '',
+    model: 'claude-sonnet-4-20250514',
+    endpoint: 'https://api.anthropic.com',
+  };
+}
+
+function saveLlmConfig(config: LlmConfig) {
+  try { localStorage.setItem(LLM_STORAGE_KEY, JSON.stringify(config)); } catch { /* ignore */ }
+}
+
 interface SimState {
   agents: Record<string, AgentState>;
   messages: Message[];
@@ -43,6 +71,10 @@ interface SimState {
   currentProblem: string;
   consensusEvents: ConsensusEvent[];
   globalConfidence: number;
+
+  // LLM config
+  llmConfig: LlmConfig;
+  setLlmConfig: (config: LlmConfig) => void;
 
   // Phase 2: AI mode
   mode: SimMode;
@@ -114,6 +146,13 @@ export const useSimStore = create<SimState>((set) => ({
   consensusEvents: [],
   globalConfidence: 0,
 
+  // LLM config
+  llmConfig: loadLlmConfig(),
+  setLlmConfig: (config: LlmConfig) => {
+    saveLlmConfig(config);
+    set({ llmConfig: config });
+  },
+
   // Phase 2
   mode: 'simulation' as SimMode,
   userProblem: '',
@@ -171,20 +210,22 @@ export const useSimStore = create<SimState>((set) => ({
 
   incrementTick: () =>
     set((s) => {
-      // Record confidence history snapshot
+      // Record confidence history snapshot, clamp confidence to [0, 100]
       const agents = { ...s.agents };
       for (const id of Object.keys(agents)) {
         const a = agents[id];
+        const clamped = Math.min(100, Math.max(0, a.confidence));
         agents[id] = {
           ...a,
-          confidenceHistory: [...a.confidenceHistory.slice(-49), a.confidence],
+          confidence: clamped,
+          confidenceHistory: [...a.confidenceHistory.slice(-49), clamped],
         };
       }
       // Calculate global confidence
       const values = Object.values(agents);
-      const globalConfidence = Math.round(
+      const globalConfidence = Math.min(100, Math.round(
         values.reduce((sum, a) => sum + a.confidence, 0) / values.length
-      );
+      ));
       return { tickCount: s.tickCount + 1, agents, globalConfidence };
     }),
 
@@ -375,7 +416,13 @@ export const useSimStore = create<SimState>((set) => ({
         category: 'feedback',
       };
       // Detect if user asks agents to stop asking questions
-      const stopPhrases = ['תפסיקו לשאול', 'אל תשאלו', 'מספיק שאלות', 'תענו עם מה שיש', 'תעבדו עם הנתונים', 'stop asking', 'לא עוד שאלות', 'תפסיק לשאול', 'עם הנתונים שיש'];
+      const stopPhrases = [
+        'תפסיקו לשאול', 'אל תשאלו', 'מספיק שאלות', 'תענו עם מה שיש',
+        'תעבדו עם הנתונים', 'stop asking', 'לא עוד שאלות', 'תפסיק לשאול',
+        'עם הנתונים שיש', 'הפסיקו לשאול', 'הפסיקו שאלות', 'בלי שאלות',
+        'לא לשאול', 'אל תשאל', 'תפסיקו', 'הפסיקו', 'enough questions',
+        'no more questions', 'תגמרו', 'מספיק', 'די שאלות', 'די לשאול',
+      ];
       const lowerFeedback = feedback.toLowerCase();
       const shouldStopQuestions = stopPhrases.some((p) => lowerFeedback.includes(p));
       // Reset confidence slightly to force re-evaluation

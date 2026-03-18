@@ -4,9 +4,10 @@ import { toggleAudio, updateAmbientTone } from '../../hooks/useSynapseAudio';
 
 interface StatusBarProps {
   onOpenGuide: () => void;
+  onOpenSettings: () => void;
 }
 
-export default function StatusBar({ onOpenGuide }: StatusBarProps) {
+export default function StatusBar({ onOpenGuide, onOpenSettings }: StatusBarProps) {
   const tickCount = useSimStore((s) => s.tickCount);
   const startTime = useSimStore((s) => s.startTime);
   const globalConfidence = useSimStore((s) => s.globalConfidence);
@@ -26,9 +27,8 @@ export default function StatusBar({ onOpenGuide }: StatusBarProps) {
 
   const handleToggleApi = () => {
     const store = useSimStore.getState();
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
-    if (!isApiMode && !apiKey) {
-      alert('חסר מפתח API — הגדר VITE_ANTHROPIC_API_KEY בקובץ .env');
+    if (!isApiMode && !store.llmConfig.apiKey) {
+      onOpenSettings();
       return;
     }
     store.setApiMode(!isApiMode);
@@ -46,6 +46,14 @@ export default function StatusBar({ onOpenGuide }: StatusBarProps) {
           title={isApiMode ? 'מצב AI אמיתי — לחץ לכיבוי' : 'מצב סימולציה — לחץ להפעלת AI'}
         >
           {isApiMode ? '🔴 AI פעיל' : '⚪ סימולציה'}
+        </button>
+        <button
+          type="button"
+          className="settings-toggle"
+          onClick={onOpenSettings}
+          title="הגדרות LLM"
+        >
+          ⚙
         </button>
       </div>
       <div className="status-bar-center">
