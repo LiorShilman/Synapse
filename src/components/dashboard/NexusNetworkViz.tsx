@@ -69,11 +69,11 @@ export default function NexusNetworkViz({ thought }: NexusNetworkVizProps) {
       <div className="nexus-phase-row">
         <motion.span
           className="nexus-phase-badge"
-          style={{ color: phase.color, borderColor: `${phase.color}40` }}
+          style={{ '--agent-color': phase.color, borderColor: `${phase.color}40` } as React.CSSProperties}
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <span className="nexus-phase-dot" style={{ backgroundColor: phase.color }} />
+          <span className="nexus-phase-dot bg-agent" style={{ '--agent-color': phase.color } as React.CSSProperties} />
           {phase.text}
         </motion.span>
         <span className="nexus-engine-tag">NETWORK HUB</span>
@@ -146,7 +146,7 @@ export default function NexusNetworkViz({ thought }: NexusNetworkVizProps) {
       <div className="nexus-clarity">
         <div className="nexus-clarity-label">
           <span>NETWORK CLARITY</span>
-          <span style={{ color: networkClarity >= 60 ? '#66BB6A' : '#CE93D8' }}>{networkClarity}%</span>
+          <span className={networkClarity >= 60 ? 'text-green' : 'text-purple'}>{networkClarity}%</span>
         </div>
         <div className="nexus-clarity-track">
           <motion.div

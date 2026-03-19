@@ -138,9 +138,9 @@ export default function LearningChart() {
       <div className="learning-chart-legend">
         {AGENTS.map((a) => (
           <div key={a.id} className="legend-item">
-            <span className="legend-dot" style={{ backgroundColor: a.color }} />
+            <span className="legend-dot bg-agent" style={{ '--agent-color': a.color } as React.CSSProperties} />
             <span className="legend-label">{a.name}</span>
-            <span className="legend-value" style={{ color: a.color }}>
+            <span className="legend-value text-agent" style={{ '--agent-color': a.color } as React.CSSProperties}>
               {agents[a.id]?.confidence ?? 0}%
             </span>
           </div>

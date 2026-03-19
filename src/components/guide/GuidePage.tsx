@@ -124,15 +124,15 @@ export default function GuidePage({ onClose }: GuidePageProps) {
                 {AGENTS.map((agent) => {
                   const details = AGENT_DETAILS[agent.id];
                   return (
-                    <div key={agent.id} className="guide-agent-card" style={{ borderColor: `${agent.color}33` }}>
+                    <div key={agent.id} className="guide-agent-card" style={{ '--agent-color': agent.color, borderColor: `${agent.color}33` } as React.CSSProperties}>
                       <div className="guide-agent-bar" style={{ background: `linear-gradient(90deg, ${agent.color}, ${agent.glowColor})` }} />
                       <div className="guide-agent-top">
                         <div className="guide-agent-icon" style={{ background: `${agent.color}1A` }}>
                           {AGENT_ICONS[agent.id]}
                         </div>
                         <div>
-                          <h3 style={{ color: agent.color }}>{agent.name}</h3>
-                          <div className="guide-agent-role" style={{ color: agent.color }}>{agent.role}</div>
+                          <h3 className="text-agent">{agent.name}</h3>
+                          <div className="guide-agent-role text-agent">{agent.role}</div>
                         </div>
                       </div>
                       <div className="guide-agent-desc">{details.longDesc}</div>
@@ -159,7 +159,7 @@ export default function GuidePage({ onClose }: GuidePageProps) {
                   { num: '✓', title: 'קונצנזוס', desc: 'כל 8 מחזורים — בדיקת סף 70%', color: '#FFD54F' },
                 ].map((step, i) => (
                   <div key={i} className="guide-flow-item">
-                    <div className="guide-flow-num" style={{ borderColor: step.color, color: step.color }}>{step.num}</div>
+                    <div className="guide-flow-num text-agent border-agent" style={{ '--agent-color': step.color } as React.CSSProperties}>{step.num}</div>
                     <div>
                       <div className="guide-flow-title">{step.title}</div>
                       <div className="guide-flow-desc">{step.desc}</div>
@@ -178,27 +178,27 @@ export default function GuidePage({ onClose }: GuidePageProps) {
               <div className="guide-ai-grid">
                 <div className="guide-ai-card">
                   <span className="guide-ai-icon">📊</span>
-                  <div className="guide-ai-text"><strong style={{color:'#4FC3F7'}}>אורקל</strong> — מדדים מספריים, מד ביטחון מפולח וחילוץ נתונים מחושב</div>
+                  <div className="guide-ai-text"><strong className="text-cyan">אורקל</strong> — מדדים מספריים, מד ביטחון מפולח וחילוץ נתונים מחושב</div>
                 </div>
                 <div className="guide-ai-card">
                   <span className="guide-ai-icon">🧬</span>
-                  <div className="guide-ai-text"><strong style={{color:'#FFD54F'}}>סייג׳</strong> — מפת סוכנים עם אחוזי ביטחון, פס סינתזה ושלב עבודה</div>
+                  <div className="guide-ai-text"><strong className="text-yellow">סייג׳</strong> — מפת סוכנים עם אחוזי ביטחון, פס סינתזה ושלב עבודה</div>
                 </div>
                 <div className="guide-ai-card">
                   <span className="guide-ai-icon">✅</span>
-                  <div className="guide-ai-text"><strong style={{color:'#EF9A9A'}}>סייפר</strong> — בדיקות לוגיות (עקביות, הנחות, קצוות) עם מוני אימות</div>
+                  <div className="guide-ai-text"><strong className="text-red">סייפר</strong> — בדיקות לוגיות (עקביות, הנחות, קצוות) עם מוני אימות</div>
                 </div>
                 <div className="guide-ai-card">
                   <span className="guide-ai-icon">🧠</span>
-                  <div className="guide-ai-text"><strong style={{color:'#66BB6A'}}>אקו</strong> — בנק זיכרון, קצב למידה וציר זמן של זכרונות אחרונים</div>
+                  <div className="guide-ai-text"><strong className="text-green">אקו</strong> — בנק זיכרון, קצב למידה וציר זמן של זכרונות אחרונים</div>
                 </div>
                 <div className="guide-ai-card">
                   <span className="guide-ai-icon">🕸️</span>
-                  <div className="guide-ai-text"><strong style={{color:'#CE93D8'}}>נקסוס</strong> — מיני-רשת SVG עם צמתים פועמים ופס בהירות רשת</div>
+                  <div className="guide-ai-text"><strong className="text-purple">נקסוס</strong> — מיני-רשת SVG עם צמתים פועמים ופס בהירות רשת</div>
                 </div>
                 <div className="guide-ai-card">
                   <span className="guide-ai-icon">🔥</span>
-                  <div className="guide-ai-text"><strong style={{color:'#FFAB40'}}>פורג׳</strong> — מד חום 15-מקטעי עם מוני פתרונות, טיוטות ויצירות</div>
+                  <div className="guide-ai-text"><strong className="text-orange">פורג׳</strong> — מד חום 15-מקטעי עם מוני פתרונות, טיוטות ויצירות</div>
                 </div>
               </div>
             </div>

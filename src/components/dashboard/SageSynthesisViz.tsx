@@ -44,11 +44,11 @@ export default function SageSynthesisViz({ thought }: SageSynthesisVizProps) {
       <div className="sage-phase-row">
         <motion.span
           className="sage-phase-badge"
-          style={{ color: phase.color, borderColor: `${phase.color}40` }}
+          style={{ '--agent-color': phase.color, borderColor: `${phase.color}40` } as React.CSSProperties}
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 2.5, repeat: Infinity }}
         >
-          <span className="sage-phase-dot" style={{ backgroundColor: phase.color }} />
+          <span className="sage-phase-dot bg-agent" style={{ '--agent-color': phase.color } as React.CSSProperties} />
           {phase.text}
         </motion.span>
         <span className="sage-engine-tag">SYNTHESIS ENGINE</span>
@@ -59,7 +59,6 @@ export default function SageSynthesisViz({ thought }: SageSynthesisVizProps) {
         {otherAgents.map((a) => {
           const state = agents[a.id];
           const conf = state?.confidence ?? 0;
-          const confColor = conf >= 70 ? '#66BB6A' : conf >= 40 ? '#FFD54F' : '#EF9A9A';
           return (
             <motion.div
               key={a.id}
@@ -67,9 +66,9 @@ export default function SageSynthesisViz({ thought }: SageSynthesisVizProps) {
               animate={state?.isThinking ? { borderColor: [`${a.color}40`, a.color, `${a.color}40`] } : {}}
               transition={{ duration: 1.5, repeat: Infinity }}
             >
-              <span className="sage-agent-pip-dot" style={{ backgroundColor: a.color }} />
+              <span className="sage-agent-pip-dot bg-agent" style={{ '--agent-color': a.color } as React.CSSProperties} />
               <span className="sage-agent-pip-name">{a.name}</span>
-              <span className="sage-agent-pip-conf" style={{ color: confColor }}>{conf}%</span>
+              <span className={`sage-agent-pip-conf ${conf >= 70 ? 'text-green' : conf >= 40 ? 'text-yellow' : 'text-red'}`}>{conf}%</span>
             </motion.div>
           );
         })}
@@ -79,7 +78,7 @@ export default function SageSynthesisViz({ thought }: SageSynthesisVizProps) {
       <div className="sage-synthesis-bar">
         <div className="sage-synthesis-label">
           <span>COLLECTIVE SYNTHESIS</span>
-          <span style={{ color: synthesisLevel >= 70 ? '#66BB6A' : '#FFD54F' }}>{synthesisLevel}%</span>
+          <span className={synthesisLevel >= 70 ? 'text-green' : 'text-yellow'}>{synthesisLevel}%</span>
         </div>
         <div className="sage-synthesis-track">
           <motion.div

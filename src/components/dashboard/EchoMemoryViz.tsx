@@ -65,11 +65,11 @@ export default function EchoMemoryViz({ thought }: EchoMemoryVizProps) {
       <div className="echo-phase-row">
         <motion.span
           className="echo-phase-badge"
-          style={{ color: phase.color, borderColor: `${phase.color}40` }}
+          style={{ '--agent-color': phase.color, borderColor: `${phase.color}40` } as React.CSSProperties}
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 2.5, repeat: Infinity }}
         >
-          <span className="echo-phase-dot" style={{ backgroundColor: phase.color }} />
+          <span className="echo-phase-dot bg-agent" style={{ '--agent-color': phase.color } as React.CSSProperties} />
           {phase.text}
         </motion.span>
         <span className="echo-engine-tag">MEMORY BANK</span>
@@ -78,15 +78,15 @@ export default function EchoMemoryViz({ thought }: EchoMemoryVizProps) {
       {/* Stats row */}
       <div className="echo-stats">
         <div className="echo-stat">
-          <span className="echo-stat-value" style={{ color: '#66BB6A' }}>{storedCount}</span>
+          <span className="echo-stat-value text-green">{storedCount}</span>
           <span className="echo-stat-label">זיכרונות</span>
         </div>
         <div className="echo-stat">
-          <span className="echo-stat-value" style={{ color: '#4FC3F7' }}>{patternsFound}</span>
+          <span className="echo-stat-value text-cyan">{patternsFound}</span>
           <span className="echo-stat-label">דפוסים</span>
         </div>
         <div className="echo-stat">
-          <span className="echo-stat-value" style={{ color: '#CE93D8' }}>{echoMessages.length}</span>
+          <span className="echo-stat-value text-purple">{echoMessages.length}</span>
           <span className="echo-stat-label">שליפות</span>
         </div>
       </div>
@@ -95,7 +95,7 @@ export default function EchoMemoryViz({ thought }: EchoMemoryVizProps) {
       <div className="echo-learning">
         <div className="echo-learning-label">
           <span>LEARNING RATE</span>
-          <span style={{ color: '#66BB6A' }}>{learningRate}%</span>
+          <span className="text-green">{learningRate}%</span>
         </div>
         <div className="echo-learning-track">
           <motion.div
@@ -117,7 +117,7 @@ export default function EchoMemoryViz({ thought }: EchoMemoryVizProps) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.1, duration: 0.2 }}
             >
-              <span className="echo-timeline-dot" style={{ backgroundColor: mem.agentColor }} />
+              <span className="echo-timeline-dot bg-agent" style={{ '--agent-color': mem.agentColor } as React.CSSProperties} />
               <span className="echo-timeline-text">{mem.text}</span>
             </motion.div>
           ))}

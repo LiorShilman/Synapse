@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSimStore, type LlmProvider, type LlmConfig } from '../../store/useSimStore';
 
 const DEFAULT_ENDPOINTS: Record<LlmProvider, string> = {
@@ -23,16 +23,11 @@ export default function ApiSettingsModal({ onClose }: Props) {
   const [apiKey, setApiKey] = useState(llmConfig.apiKey);
   const [model, setModel] = useState(llmConfig.model);
   const [endpoint, setEndpoint] = useState(llmConfig.endpoint);
-  const [customModel, setCustomModel] = useState('');
+  const isInitialCustom = !DEFAULT_MODELS[llmConfig.provider].includes(llmConfig.model);
+  const [customModel, setCustomModel] = useState(isInitialCustom ? llmConfig.model : '');
   const [showKey, setShowKey] = useState(false);
 
   const isCustomModel = !DEFAULT_MODELS[provider].includes(model);
-
-  useEffect(() => {
-    if (isCustomModel) {
-      setCustomModel(model);
-    }
-  }, []);
 
   const handleProviderChange = (p: LlmProvider) => {
     setProvider(p);
@@ -121,6 +116,7 @@ export default function ApiSettingsModal({ onClose }: Props) {
           <label className="settings-label">מודל</label>
           <select
             className="settings-select"
+            aria-label="בחירת מודל"
             value={isCustomModel ? '__custom__' : model}
             onChange={(e) => {
               if (e.target.value === '__custom__') {

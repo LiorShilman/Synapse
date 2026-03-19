@@ -56,11 +56,11 @@ export default function ForgeCreativeViz({ thought }: ForgeCreativeVizProps) {
       <div className="forge-phase-row">
         <motion.span
           className="forge-phase-badge"
-          style={{ color: phase.color, borderColor: `${phase.color}40` }}
+          style={{ '--agent-color': phase.color, borderColor: `${phase.color}40` } as React.CSSProperties}
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <span className="forge-phase-dot" style={{ backgroundColor: phase.color }} />
+          <span className="forge-phase-dot bg-agent" style={{ '--agent-color': phase.color } as React.CSSProperties} />
           {phase.text}
         </motion.span>
         <span className="forge-engine-tag">CREATIVE FORGE</span>
@@ -70,7 +70,7 @@ export default function ForgeCreativeViz({ thought }: ForgeCreativeVizProps) {
       <div className="forge-heat">
         <div className="forge-heat-label">
           <span>FORGE HEAT</span>
-          <span style={{ color: heatColor }}>{heat}%</span>
+          <span className="text-agent" style={{ '--agent-color': heatColor } as React.CSSProperties}>{heat}%</span>
         </div>
         <div className="forge-heat-track">
           {Array.from({ length: 15 }).map((_, i) => {
@@ -96,15 +96,15 @@ export default function ForgeCreativeViz({ thought }: ForgeCreativeVizProps) {
       {/* Stats */}
       <div className="forge-stats">
         <div className="forge-stat">
-          <span className="forge-stat-value" style={{ color: '#66BB6A' }}>{solutionsCreated}</span>
+          <span className="forge-stat-value text-green">{solutionsCreated}</span>
           <span className="forge-stat-label">פתרונות</span>
         </div>
         <div className="forge-stat">
-          <span className="forge-stat-value" style={{ color: '#FFAB40' }}>{prototypes}</span>
+          <span className="forge-stat-value text-orange">{prototypes}</span>
           <span className="forge-stat-label">טיוטות</span>
         </div>
         <div className="forge-stat">
-          <span className="forge-stat-value" style={{ color: '#4FC3F7' }}>{forgeMessages.length}</span>
+          <span className="forge-stat-value text-cyan">{forgeMessages.length}</span>
           <span className="forge-stat-label">יצירות</span>
         </div>
       </div>

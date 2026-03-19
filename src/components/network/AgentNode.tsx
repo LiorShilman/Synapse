@@ -21,19 +21,20 @@ interface AgentNodeProps {
 
 // Thinking vortex — spiral of particles shooting upward when agent thinks
 const VORTEX_COUNT = 60;
+const VORTEX_SPEEDS = (() => {
+  const arr = new Float32Array(VORTEX_COUNT);
+  for (let i = 0; i < VORTEX_COUNT; i++) arr[i] = 0.3 + Math.random() * 0.7;
+  return arr;
+})();
+const VORTEX_ANGLES = (() => {
+  const arr = new Float32Array(VORTEX_COUNT);
+  for (let i = 0; i < VORTEX_COUNT; i++) arr[i] = Math.random() * Math.PI * 2;
+  return arr;
+})();
+
 function ThinkingVortex({ color, active }: { color: string; active: boolean }) {
   const ref = useRef<THREE.Points>(null);
   const positions = useMemo(() => new Float32Array(VORTEX_COUNT * 3), []);
-  const speeds = useMemo(() => {
-    const arr = new Float32Array(VORTEX_COUNT);
-    for (let i = 0; i < VORTEX_COUNT; i++) arr[i] = 0.3 + Math.random() * 0.7;
-    return arr;
-  }, []);
-  const angles = useMemo(() => {
-    const arr = new Float32Array(VORTEX_COUNT);
-    for (let i = 0; i < VORTEX_COUNT; i++) arr[i] = Math.random() * Math.PI * 2;
-    return arr;
-  }, []);
 
   useFrame(() => {
     if (!ref.current) return;
@@ -48,8 +49,8 @@ function ThinkingVortex({ color, active }: { color: string; active: boolean }) {
     const t = Date.now() * 0.003;
     const arr = ref.current.geometry.attributes.position.array as Float32Array;
     for (let i = 0; i < VORTEX_COUNT; i++) {
-      const phase = (t * speeds[i] + angles[i]) % (Math.PI * 2);
-      const height = ((t * speeds[i] * 0.5 + i * 0.1) % 2.5);
+      const phase = (t * VORTEX_SPEEDS[i] + VORTEX_ANGLES[i]) % (Math.PI * 2);
+      const height = ((t * VORTEX_SPEEDS[i] * 0.5 + i * 0.1) % 2.5);
       const radius = 0.15 + height * 0.3;
       arr[i * 3] = Math.cos(phase) * radius;
       arr[i * 3 + 1] = height - 0.3;
@@ -125,17 +126,17 @@ function EnergyBurst({ color, active }: { color: string; active: boolean }) {
   const burstPhase = useRef(1); // 1 = done
   const BURST_COUNT = 40;
   const positions = useMemo(() => new Float32Array(BURST_COUNT * 3), []);
-  const dirs = useMemo(() => {
-    const arr: THREE.Vector3[] = [];
-    for (let i = 0; i < BURST_COUNT; i++) {
-      arr.push(new THREE.Vector3(
+  const dirsRef = useRef<THREE.Vector3[] | null>(null);
+  if (!dirsRef.current) {
+    dirsRef.current = Array.from({ length: BURST_COUNT }, () =>
+      new THREE.Vector3(
         (Math.random() - 0.5) * 2,
         (Math.random() - 0.5) * 2,
         (Math.random() - 0.5) * 2,
-      ).normalize());
-    }
-    return arr;
-  }, []);
+      ).normalize()
+    );
+  }
+  const dirs = dirsRef.current;
 
   useFrame(() => {
     if (!ref.current) return;
@@ -178,7 +179,8 @@ function OrbitalParticles({ color, count, radius, speed }: {
   color: string; count: number; radius: number; speed: number;
 }) {
   const ref = useRef<THREE.Points>(null);
-  const positions = useMemo(() => {
+  const positionsRef = useRef<Float32Array | null>(null);
+  if (!positionsRef.current) {
     const arr = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * Math.PI * 2;
@@ -187,8 +189,9 @@ function OrbitalParticles({ color, count, radius, speed }: {
       arr[i * 3 + 1] = (Math.random() - 0.5) * 0.3;
       arr[i * 3 + 2] = Math.sin(angle) * r;
     }
-    return arr;
-  }, [count, radius]);
+    positionsRef.current = arr;
+  }
+  const positions = positionsRef.current;
 
   useFrame(() => {
     if (ref.current) {

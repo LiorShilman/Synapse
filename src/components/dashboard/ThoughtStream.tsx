@@ -69,17 +69,17 @@ export default function ThoughtStream() {
                 transition={{ duration: 0.3 }}
               >
                 <div className="thought-entry-header">
-                  <span style={{ color: '#4A6A8A' }} dir="ltr">[{time}]</span>{' '}
+                  <span className="text-muted" dir="ltr">[{time}]</span>{' '}
                   {isUserMsg ? (
-                    <span style={{ color: '#4FC3F7' }}>משתמש</span>
+                    <span className="text-cyan">משתמש</span>
                   ) : (
                     <>
-                      <span style={{ color: sender?.color }}>{sender?.name}</span>
-                      <span style={{ color: '#4A6A8A' }}> ← </span>
+                      <span className="text-agent" style={{ '--agent-color': sender?.color } as React.CSSProperties}>{sender?.name}</span>
+                      <span className="text-muted"> ← </span>
                       {receivers.map((r, i) => (
                         <span key={r!.id}>
-                          {i > 0 && <span style={{ color: '#4A6A8A' }}>,</span>}
-                          <span style={{ color: r!.color }}>{r!.name}</span>
+                          {i > 0 && <span className="text-muted">,</span>}
+                          <span className="text-agent" style={{ '--agent-color': r!.color } as React.CSSProperties}>{r!.name}</span>
                         </span>
                       ))}
                     </>

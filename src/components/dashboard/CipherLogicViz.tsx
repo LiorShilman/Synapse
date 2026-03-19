@@ -75,11 +75,11 @@ export default function CipherLogicViz({ thought }: CipherLogicVizProps) {
       <div className="cipher-status-row">
         <motion.span
           className="cipher-status-badge"
-          style={{ color: status.color, borderColor: `${status.color}40` }}
+          style={{ '--agent-color': status.color, borderColor: `${status.color}40` } as React.CSSProperties}
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <span className="cipher-status-dot" style={{ backgroundColor: status.color }} />
+          <span className="cipher-status-dot bg-agent" style={{ '--agent-color': status.color } as React.CSSProperties} />
           {status.text}
         </motion.span>
         <span className="cipher-engine-tag">LOGIC GATE</span>
@@ -89,7 +89,7 @@ export default function CipherLogicViz({ thought }: CipherLogicVizProps) {
       <div className="cipher-checks">
         {checks.map((check, i) => {
           const icon = check.status === 'pass' ? '✓' : check.status === 'fail' ? '✗' : '○';
-          const color = check.status === 'pass' ? '#66BB6A' : check.status === 'fail' ? '#EF9A9A' : 'rgba(100,160,255,0.3)';
+          const colorClass = check.status === 'pass' ? 'text-green' : check.status === 'fail' ? 'text-red' : 'text-muted';
           return (
             <motion.div
               key={check.label}
@@ -98,9 +98,9 @@ export default function CipherLogicViz({ thought }: CipherLogicVizProps) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.08, duration: 0.2 }}
             >
-              <span className="cipher-check-icon" style={{ color }}>{icon}</span>
+              <span className={`cipher-check-icon ${colorClass}`}>{icon}</span>
               <span className="cipher-check-label">{check.label}</span>
-              <span className="cipher-check-status" style={{ color }}>
+              <span className={`cipher-check-status ${colorClass}`}>
                 {check.status === 'pass' ? 'PASS' : check.status === 'fail' ? 'FAIL' : '...'}
               </span>
             </motion.div>
@@ -111,15 +111,15 @@ export default function CipherLogicViz({ thought }: CipherLogicVizProps) {
       {/* Counters */}
       <div className="cipher-counters">
         <div className="cipher-counter">
-          <span className="cipher-counter-value" style={{ color: '#66BB6A' }}>{verified}</span>
+          <span className="cipher-counter-value text-green">{verified}</span>
           <span className="cipher-counter-label">אומתו</span>
         </div>
         <div className="cipher-counter">
-          <span className="cipher-counter-value" style={{ color: '#EF9A9A' }}>{flagged}</span>
+          <span className="cipher-counter-value text-red">{flagged}</span>
           <span className="cipher-counter-label">סומנו</span>
         </div>
         <div className="cipher-counter">
-          <span className="cipher-counter-value" style={{ color: '#4FC3F7' }}>{cipherMessages.length}</span>
+          <span className="cipher-counter-value text-cyan">{cipherMessages.length}</span>
           <span className="cipher-counter-label">סריקות</span>
         </div>
       </div>

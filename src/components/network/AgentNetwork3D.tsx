@@ -30,11 +30,16 @@ function NeuralEdge({ fromId, toId }: { fromId: string; toId: string }) {
   const dotsRef = useRef<THREE.Points>(null);
   const fromAgent = AGENTS.find((a) => a.id === fromId);
   const toAgent = AGENTS.find((a) => a.id === toId);
-  if (!fromAgent || !toAgent) return null;
 
   const DOT_COUNT = 6;
 
   const { curve, geom } = useMemo(() => {
+    if (!fromAgent || !toAgent) {
+      const c = new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()
+      );
+      return { curve: c, geom: new THREE.BufferGeometry().setFromPoints(c.getPoints(2)) };
+    }
     const from = new THREE.Vector3(...fromAgent.position);
     const to = new THREE.Vector3(...toAgent.position);
     const mid = new THREE.Vector3().lerpVectors(from, to, 0.5);
@@ -53,12 +58,14 @@ function NeuralEdge({ fromId, toId }: { fromId: string; toId: string }) {
   const dotPositions = useMemo(() => new Float32Array(DOT_COUNT * 3), []);
 
   const midColor = useMemo(() => {
+    if (!fromAgent || !toAgent) return new THREE.Color('#4FC3F7');
     const c1 = new THREE.Color(fromAgent.color);
     const c2 = new THREE.Color(toAgent.color);
     return new THREE.Color().lerpColors(c1, c2, 0.5);
-  }, [fromAgent.color, toAgent.color]);
+  }, [fromAgent, toAgent]);
 
   useFrame(() => {
+    if (!fromAgent || !toAgent) return;
     const t = Date.now();
 
     if (lineRef.current) {
@@ -79,6 +86,8 @@ function NeuralEdge({ fromId, toId }: { fromId: string; toId: string }) {
       dotsRef.current.geometry.attributes.position.needsUpdate = true;
     }
   });
+
+  if (!fromAgent || !toAgent) return null;
 
   return (
     <group>
@@ -232,26 +241,25 @@ function EnergyDome() {
 
 // Ambient floating particles — more when active
 const AMBIENT_PARTICLE_COUNT = 250;
+const AMBIENT_POSITIONS = (() => {
+  const arr = new Float32Array(AMBIENT_PARTICLE_COUNT * 3);
+  for (let i = 0; i < AMBIENT_PARTICLE_COUNT; i++) {
+    arr[i * 3] = (Math.random() - 0.5) * 14;
+    arr[i * 3 + 1] = (Math.random() - 0.5) * 10;
+    arr[i * 3 + 2] = (Math.random() - 0.5) * 14;
+  }
+  return arr;
+})();
+const AMBIENT_SPEEDS = (() => {
+  const arr = new Float32Array(AMBIENT_PARTICLE_COUNT);
+  for (let i = 0; i < AMBIENT_PARTICLE_COUNT; i++) arr[i] = 0.5 + Math.random() * 1.5;
+  return arr;
+})();
+
 function AmbientActivityField() {
   const ref = useRef<THREE.Points>(null);
   const activeCount = useSimStore((s) => s.activeEdges.length);
   const globalConfidence = useSimStore((s) => s.globalConfidence);
-
-  const positions = useMemo(() => {
-    const arr = new Float32Array(AMBIENT_PARTICLE_COUNT * 3);
-    for (let i = 0; i < AMBIENT_PARTICLE_COUNT; i++) {
-      arr[i * 3] = (Math.random() - 0.5) * 14;
-      arr[i * 3 + 1] = (Math.random() - 0.5) * 10;
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 14;
-    }
-    return arr;
-  }, []);
-
-  const speeds = useMemo(() => {
-    const arr = new Float32Array(AMBIENT_PARTICLE_COUNT);
-    for (let i = 0; i < AMBIENT_PARTICLE_COUNT; i++) arr[i] = 0.5 + Math.random() * 1.5;
-    return arr;
-  }, []);
 
   useFrame(() => {
     if (!ref.current) return;
@@ -261,7 +269,7 @@ function AmbientActivityField() {
     const posArr = ref.current.geometry.attributes.position.array as Float32Array;
 
     for (let i = 0; i < AMBIENT_PARTICLE_COUNT; i++) {
-      posArr[i * 3 + 1] += Math.sin(t * speeds[i] + i) * 0.003;
+      posArr[i * 3 + 1] += Math.sin(t * AMBIENT_SPEEDS[i] + i) * 0.003;
       if (posArr[i * 3 + 1] > 5) posArr[i * 3 + 1] = -5;
       if (posArr[i * 3 + 1] < -5) posArr[i * 3 + 1] = 5;
     }
@@ -275,7 +283,7 @@ function AmbientActivityField() {
   return (
     <points ref={ref}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-position" args={[AMBIENT_POSITIONS, 3]} />
       </bufferGeometry>
       <pointsMaterial color="#6AB0E0" size={0.03} transparent opacity={0.3} sizeAttenuation />
     </points>
@@ -301,7 +309,7 @@ export default function AgentNetwork3D() {
   const focusedAgent = focusedAgentId ? AGENTS.find((a) => a.id === focusedAgentId) : null;
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div className="network-canvas-wrapper">
       {/* Back to overview button */}
       {focusedAgent && (
         <button

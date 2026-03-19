@@ -2831,3 +2831,24 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ── Color utility classes ── */
+.text-muted { color: #4A6A8A; }
+.text-cyan { color: #4FC3F7; }
+.text-green { color: #66BB6A; }
+.text-red { color: #EF9A9A; }
+.text-purple { color: #CE93D8; }
+.text-yellow { color: #FFD54F; }
+.text-orange { color: #FFAB40; }
+
+/* Dynamic agent color via CSS custom property */
+.text-agent { color: var(--agent-color); }
+.bg-agent { background-color: var(--agent-color); }
+.border-agent { border-color: var(--agent-color); }
+
+/* Canvas wrapper */
+.network-canvas-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}

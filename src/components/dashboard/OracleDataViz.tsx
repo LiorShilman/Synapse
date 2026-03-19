@@ -90,11 +90,11 @@ export default function OracleDataViz({ thought, confidence }: OracleDataVizProp
       <div className="oracle-status-row">
         <motion.span
           className="oracle-status-badge"
-          style={{ color: status.color, borderColor: `${status.color}40` }}
+          style={{ '--agent-color': status.color, borderColor: `${status.color}40` } as React.CSSProperties}
           animate={{ opacity: [0.7, 1, 0.7] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <span className="oracle-status-dot" style={{ backgroundColor: status.color }} />
+          <span className="oracle-status-dot bg-agent" style={{ '--agent-color': status.color } as React.CSSProperties} />
           {status.text}
         </motion.span>
         <span className="oracle-model-tag">BAYESIAN ENGINE</span>
@@ -112,14 +112,14 @@ export default function OracleDataViz({ thought, confidence }: OracleDataVizProp
               transition={{ delay: i * 0.1, duration: 0.3 }}
             >
               <div className="oracle-metric-label">{m.label}</div>
-              <div className="oracle-metric-value" style={{ color: m.color }}>
+              <div className="oracle-metric-value text-agent" style={{ '--agent-color': m.color } as React.CSSProperties}>
                 {m.suffix === '%' ? m.value : m.value / 100}
                 <span className="oracle-metric-suffix">{m.suffix}</span>
               </div>
               <div className="oracle-metric-bar-bg">
                 <motion.div
-                  className="oracle-metric-bar-fill"
-                  style={{ backgroundColor: m.color }}
+                  className="oracle-metric-bar-fill bg-agent"
+                  style={{ '--agent-color': m.color } as React.CSSProperties}
                   initial={{ width: 0 }}
                   animate={{ width: `${m.value}%` }}
                   transition={{ duration: 0.6, delay: i * 0.1, ease: 'easeOut' }}
@@ -134,7 +134,7 @@ export default function OracleDataViz({ thought, confidence }: OracleDataVizProp
       <div className="oracle-confidence-gauge">
         <div className="oracle-gauge-label">
           <span>SYS CONFIDENCE</span>
-          <span style={{ color: confidence >= 70 ? '#66BB6A' : '#4FC3F7' }}>{confidence}%</span>
+          <span className={confidence >= 70 ? 'text-green' : 'text-cyan'}>{confidence}%</span>
         </div>
         <div className="oracle-gauge-track">
           {/* Segmented bar */}

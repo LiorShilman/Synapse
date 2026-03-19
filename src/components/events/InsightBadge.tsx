@@ -11,8 +11,8 @@ export default function InsightBadge({ text, color, visible }: InsightBadgeProps
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="insight-badge"
-          style={{ borderColor: color, color }}
+          className="insight-badge text-agent"
+          style={{ '--agent-color': color, borderColor: color } as React.CSSProperties}
           initial={{ opacity: 0, y: 10, scale: 0.8 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -10, scale: 0.8 }}

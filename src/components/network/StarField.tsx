@@ -1,23 +1,25 @@
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+
+// Pre-computed random star positions (module-level to avoid Math.random in hooks)
+function generateStarPositions(count: number, spread: number): Float32Array {
+  const arr = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    arr[i * 3] = (Math.random() - 0.5) * spread;
+    arr[i * 3 + 1] = (Math.random() - 0.5) * spread;
+    arr[i * 3 + 2] = (Math.random() - 0.5) * spread;
+  }
+  return arr;
+}
+
+const DEEP_POSITIONS = generateStarPositions(1200, 50);
+const MID_POSITIONS = generateStarPositions(500, 35);
+const BRIGHT_POSITIONS = generateStarPositions(80, 40);
 
 // Deep star layer — tiny distant stars
 function DeepStars() {
   const ref = useRef<THREE.Points>(null);
-  const count = 1200;
-
-  const [positions, _sizes] = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    const sz = new Float32Array(count);
-    for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 50;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 50;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 50;
-      sz[i] = 0.01 + Math.random() * 0.025;
-    }
-    return [pos, sz];
-  }, []);
 
   useFrame(() => {
     if (ref.current) ref.current.rotation.y += 0.00005;
@@ -26,7 +28,7 @@ function DeepStars() {
   return (
     <points ref={ref}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-position" args={[DEEP_POSITIONS, 3]} />
       </bufferGeometry>
       <pointsMaterial size={0.02} color="#3A5A7A" transparent opacity={0.5} sizeAttenuation />
     </points>
@@ -36,17 +38,6 @@ function DeepStars() {
 // Mid-layer stars with color variation
 function MidStars() {
   const ref = useRef<THREE.Points>(null);
-  const count = 500;
-
-  const positions = useMemo(() => {
-    const arr = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      arr[i * 3] = (Math.random() - 0.5) * 35;
-      arr[i * 3 + 1] = (Math.random() - 0.5) * 35;
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 35;
-    }
-    return arr;
-  }, []);
 
   useFrame(() => {
     if (ref.current) ref.current.rotation.y += 0.0001;
@@ -55,7 +46,7 @@ function MidStars() {
   return (
     <points ref={ref}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-position" args={[MID_POSITIONS, 3]} />
       </bufferGeometry>
       <pointsMaterial size={0.04} color="#5A7A9A" transparent opacity={0.6} sizeAttenuation />
     </points>
@@ -65,17 +56,6 @@ function MidStars() {
 // Bright accent stars — few, larger, colored
 function BrightStars() {
   const ref = useRef<THREE.Points>(null);
-  const count = 80;
-
-  const positions = useMemo(() => {
-    const arr = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      arr[i * 3] = (Math.random() - 0.5) * 40;
-      arr[i * 3 + 1] = (Math.random() - 0.5) * 40;
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 40;
-    }
-    return arr;
-  }, []);
 
   useFrame(() => {
     if (ref.current) {
@@ -88,7 +68,7 @@ function BrightStars() {
   return (
     <points ref={ref}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-position" args={[BRIGHT_POSITIONS, 3]} />
       </bufferGeometry>
       <pointsMaterial size={0.07} color="#7ABADF" transparent opacity={0.4} sizeAttenuation />
     </points>
