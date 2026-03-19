@@ -1,10 +1,19 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { useSimStore } from '../../store/useSimStore';
-import { useTypewriter } from '../../hooks/useTypewriter';
 
-/** Simple markdown-to-HTML for consensus summary */
-function renderMarkdown(text: string): string {
+/** Escape HTML entities to prevent XSS */
+function escapeHtml(text: string): string {
   return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** Simple markdown-to-HTML for consensus summary (XSS-safe) */
+function renderMarkdown(text: string): string {
+  const escaped = escapeHtml(text);
+  return escaped
     // Headers
     .replace(/^### (.+)$/gm, '<h4 style="color:#4FC3F7;margin:12px 0 4px;font-size:1rem">$1</h4>')
     .replace(/^## (.+)$/gm, '<h3 style="color:#4FC3F7;margin:14px 0 6px;font-size:1.1rem">$1</h3>')
@@ -19,28 +28,38 @@ function renderMarkdown(text: string): string {
 
 export default function ResultsSummary() {
   const solutionSummary = useSimStore((s) => s.solutionSummary);
+  const isStreaming = useSimStore((s) => s.isStreaming);
   const globalConfidence = useSimStore((s) => s.globalConfidence);
   const currentProblem = useSimStore((s) => s.currentProblem);
-  const displayText = useTypewriter(solutionSummary ?? '', 15);
+  const bodyRef = useRef<HTMLDivElement>(null);
 
-  const html = useMemo(() => renderMarkdown(displayText), [displayText]);
+  const html = useMemo(() => renderMarkdown(solutionSummary ?? ''), [solutionSummary]);
+
+  // Auto-scroll to bottom as streaming content arrives
+  useEffect(() => {
+    if (bodyRef.current) {
+      bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+    }
+  }, [solutionSummary]);
 
   if (!solutionSummary) return null;
 
   return (
-    <div className="results-summary">
+    <div className={`results-summary${isStreaming ? ' results-streaming' : ''}`}>
       <div className="results-header">
         <span className="results-icon">✦</span>
         <span>סיכום קונצנזוס</span>
+        {isStreaming && <span className="results-writing-label">כותב...</span>}
         <span className="results-confidence">{globalConfidence}%</span>
       </div>
       <div className="results-problem">
         בעיה: {currentProblem}
       </div>
       <div
+        ref={bodyRef}
         className="results-body"
         dir="rtl"
-        dangerouslySetInnerHTML={{ __html: html }}
+        dangerouslySetInnerHTML={{ __html: html + (isStreaming ? '<span class="streaming-cursor">▊</span>' : '') }}
       />
       <div className="results-actions">
         <button

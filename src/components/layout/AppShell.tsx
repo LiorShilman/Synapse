@@ -9,6 +9,7 @@ import ProblemInput from '../dashboard/ProblemInput';
 import ResultsSummary from '../dashboard/ResultsSummary';
 import SimToolbar from '../dashboard/SimToolbar';
 import StatusBar from './StatusBar';
+import ErrorBoundary from './ErrorBoundary';
 import ConsensusExplosion from '../events/ConsensusExplosion';
 import GuidePage from '../guide/GuidePage';
 import ApiSettingsModal from '../settings/ApiSettingsModal';
@@ -28,7 +29,9 @@ export default function AppShell() {
 
         {/* 3D Network */}
         <div className="network-panel">
-          <AgentNetwork3D />
+          <ErrorBoundary>
+            <AgentNetwork3D />
+          </ErrorBoundary>
         </div>
 
         {/* Thought Stream + Consensus/Results at bottom */}
@@ -47,7 +50,9 @@ export default function AppShell() {
             ))}
           </div>
 
-          <LearningChart />
+          <ErrorBoundary>
+            <LearningChart />
+          </ErrorBoundary>
         </div>
       </div>
 

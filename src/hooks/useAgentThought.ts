@@ -145,10 +145,7 @@ async function callLlmApi(
         ],
       }),
     });
-    if (!response.ok) {
-      console.error('OpenAI API error:', await response.text());
-      return null;
-    }
+    if (!response.ok) return null;
     const data = await response.json();
     return data.choices?.[0]?.message?.content ?? null;
   }
@@ -170,12 +167,106 @@ async function callLlmApi(
       messages: [{ role: 'user', content: userMessage }],
     }),
   });
-  if (!response.ok) {
-    console.error('Anthropic API error:', await response.text());
-    return null;
-  }
+  if (!response.ok) return null;
   const data = await response.json();
   return data.content?.[0]?.text ?? null;
+}
+
+// ─── Streaming API for consensus summary ───
+
+async function callLlmApiStreaming(
+  systemPrompt: string,
+  userMessage: string,
+  maxTokens: number,
+  onChunk: (text: string) => void
+): Promise<string | null> {
+  const { provider, apiKey, model, endpoint } = useSimStore.getState().llmConfig;
+
+  if (provider === 'openai') {
+    const url = `${endpoint.replace(/\/+$/, '')}/v1/chat/completions`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: maxTokens,
+        stream: true,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage },
+        ],
+      }),
+    });
+    if (!response.ok) return null;
+
+    const reader = response.body?.getReader();
+    if (!reader) return null;
+    const decoder = new TextDecoder();
+    let full = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      for (const line of chunk.split('\n')) {
+        if (!line.startsWith('data: ') || line === 'data: [DONE]') continue;
+        try {
+          const json = JSON.parse(line.slice(6));
+          const delta = json.choices?.[0]?.delta?.content;
+          if (delta) {
+            full += delta;
+            onChunk(full);
+          }
+        } catch { /* skip malformed lines */ }
+      }
+    }
+    return full || null;
+  }
+
+  // Anthropic streaming
+  const url = `${endpoint.replace(/\/+$/, '')}/v1/messages`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      stream: true,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+    }),
+  });
+  if (!response.ok) return null;
+
+  const reader = response.body?.getReader();
+  if (!reader) return null;
+  const decoder = new TextDecoder();
+  let full = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const chunk = decoder.decode(value, { stream: true });
+    for (const line of chunk.split('\n')) {
+      if (!line.startsWith('data: ')) continue;
+      try {
+        const json = JSON.parse(line.slice(6));
+        if (json.type === 'content_block_delta' && json.delta?.text) {
+          full += json.delta.text;
+          onChunk(full);
+        }
+      } catch { /* skip malformed lines */ }
+    }
+  }
+  return full || null;
 }
 
 async function callAgentAPI(
@@ -196,8 +287,7 @@ async function callAgentAPI(
       0
     );
     return result ?? getSimulatedThought(agentId, context);
-  } catch (error) {
-    console.error('LLM API call failed:', error);
+  } catch {
     return getSimulatedThought(agentId, context);
   }
 }
@@ -267,25 +357,28 @@ ${agentThoughts}
 היסטוריית דיון:
 ${recentMessages}`;
 
-  // Use the rate-limited queue with high priority (jumps ahead of agent calls)
+  // Use the rate-limited queue with high priority, then stream the response
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       if (attempt > 0) {
-        console.log('[Synapse] Retrying consensus summary in 15s...');
         await new Promise((r) => setTimeout(r, 15000));
       }
-      console.log(`[Synapse] Generating consensus summary (attempt ${attempt + 1})...`);
+      // Wait in queue for our turn, then stream
+      useSimStore.getState().setIsStreaming(true);
       const result = await enqueueApiCall(
-        () => callLlmApi(systemPrompt, userMessage, 1200),
+        () => callLlmApiStreaming(systemPrompt, userMessage, 1200, (partial) => {
+          // Update store progressively — UI updates in real-time
+          useSimStore.getState().setSolutionSummary(partial);
+        }),
         10 // high priority — jumps ahead of queued agent calls
       );
+      useSimStore.getState().setIsStreaming(false);
       if (result) return result;
-      console.warn(`[Synapse] Consensus summary API returned null (attempt ${attempt + 1})`);
-    } catch (err) {
-      console.error(`[Synapse] Consensus summary failed (attempt ${attempt + 1}):`, err);
+    } catch {
+      useSimStore.getState().setIsStreaming(false);
+      // continue to retry or fallback
     }
   }
-  console.warn('[Synapse] Using local fallback for consensus summary');
   return localFallback;
 }
 

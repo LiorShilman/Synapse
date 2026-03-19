@@ -81,6 +81,7 @@ interface SimState {
   userProblem: string;
   isApiMode: boolean;
   solutionSummary: string | null;
+  isStreaming: boolean;
   isSolving: boolean;
   simPaused: boolean;
   pendingQuestion: string | null;
@@ -111,6 +112,7 @@ interface SimState {
   pauseSolving: () => void;
   resumeSolving: () => void;
   setSolutionSummary: (summary: string | null) => void;
+  setIsStreaming: (streaming: boolean) => void;
   setApiMode: (enabled: boolean) => void;
   resetForNewProblem: () => void;
   sendUserFeedback: (feedback: string) => void;
@@ -131,6 +133,35 @@ const initAgents = (): Record<string, AgentState> => {
     };
   }
   return map;
+};
+
+/** Reset all agents to a given confidence (0 = fresh start, random = simulation) */
+function resetAgents(
+  agents: Record<string, AgentState>,
+  confidence: number | 'random' = 0
+): Record<string, AgentState> {
+  const result = { ...agents };
+  for (const id of Object.keys(result)) {
+    result[id] = {
+      ...result[id],
+      confidence: confidence === 'random' ? 20 + Math.floor(Math.random() * 20) : confidence,
+      currentThought: '',
+      isThinking: false,
+      confidenceHistory: [],
+    };
+  }
+  return result;
+}
+
+const CLEAN_SLATE = {
+  messages: [] as Message[],
+  activeEdges: [] as ActiveEdge[],
+  tickCount: 0,
+  consensusEvents: [] as ConsensusEvent[],
+  globalConfidence: 0,
+  solutionSummary: null as string | null,
+  pendingQuestion: null as string | null,
+  noMoreQuestions: false,
 };
 
 let messageId = 0;
@@ -158,6 +189,7 @@ export const useSimStore = create<SimState>((set) => ({
   userProblem: '',
   isApiMode: false,
   solutionSummary: null,
+  isStreaming: false,
   isSolving: false,
   simPaused: false,
   pendingQuestion: null,
@@ -281,128 +313,42 @@ export const useSimStore = create<SimState>((set) => ({
   resumeSolving: () => set({ isSolving: true }),
 
   startSolving: () =>
-    set((s) => {
-      // Reset agents for new problem — start at 0% confidence
-      const agents = { ...s.agents };
-      for (const id of Object.keys(agents)) {
-        agents[id] = {
-          ...agents[id],
-          confidence: 0,
-          currentThought: '',
-          isThinking: false,
-          confidenceHistory: [],
-        };
-      }
-      return {
-        mode: 'solving' as SimMode,
-        isSolving: true,
-        currentProblem: s.userProblem,
-        agents,
-        messages: [],
-        activeEdges: [],
-        tickCount: 0,
-        startTime: Date.now(),
-        consensusEvents: [],
-        globalConfidence: 0,
-        solutionSummary: null,
-        pendingQuestion: null,
-        noMoreQuestions: false,
-      };
-    }),
+    set((s) => ({
+      mode: 'solving' as SimMode,
+      isSolving: true,
+      currentProblem: s.userProblem,
+      agents: resetAgents(s.agents, 0),
+      startTime: Date.now(),
+      ...CLEAN_SLATE,
+    })),
 
   stopSolving: () => set({ isSolving: false, mode: 'simulation' as SimMode }),
 
   setSolutionSummary: (summary) => set({ solutionSummary: summary }),
+  setIsStreaming: (streaming) => set({ isStreaming: streaming }),
 
   setApiMode: (enabled) =>
-    set((s) => {
-      if (enabled) {
-        // Clear screen when entering API mode — start at 0% confidence
-        const agents = { ...s.agents };
-        for (const id of Object.keys(agents)) {
-          agents[id] = {
-            ...agents[id],
-            confidence: 0,
-            currentThought: '',
-            isThinking: false,
-            confidenceHistory: [],
-          };
-        }
-        return {
-          isApiMode: true,
-          agents,
-          messages: [],
-          activeEdges: [],
-          tickCount: 0,
-          startTime: Date.now(),
-          consensusEvents: [],
-          globalConfidence: 0,
-          solutionSummary: null,
-          pendingQuestion: null,
-          noMoreQuestions: false,
-          mode: 'simulation' as SimMode,
-          isSolving: false,
-          userProblem: '',
-        };
-      }
-      // When disabling API mode, also reset for fresh simulation
-      const agents = { ...s.agents };
-      for (const id of Object.keys(agents)) {
-        agents[id] = {
-          ...agents[id],
-          confidence: 20 + Math.floor(Math.random() * 20),
-          currentThought: '',
-          isThinking: false,
-          confidenceHistory: [],
-        };
-      }
-      return {
-        isApiMode: false,
-        agents,
-        messages: [],
-        activeEdges: [],
-        tickCount: 0,
-        startTime: Date.now(),
-        consensusEvents: [],
-        globalConfidence: 0,
-        solutionSummary: null,
-        pendingQuestion: null,
-        noMoreQuestions: false,
-        mode: 'simulation' as SimMode,
-        isSolving: false,
-        userProblem: '',
-      };
-    }),
+    set((s) => ({
+      isApiMode: enabled,
+      agents: resetAgents(s.agents, enabled ? 0 : 'random'),
+      startTime: Date.now(),
+      mode: 'simulation' as SimMode,
+      isSolving: false,
+      userProblem: '',
+      ...CLEAN_SLATE,
+    })),
 
   resetForNewProblem: () =>
-    set((s) => {
-      const agents = { ...s.agents };
-      for (const id of Object.keys(agents)) {
-        agents[id] = {
-          ...agents[id],
-          confidence: 0,
-          currentThought: '',
-          isThinking: false,
-          confidenceHistory: [],
-        };
-      }
-      return {
-        agents,
-        messages: [],
-        activeEdges: [],
-        tickCount: 0,
-        startTime: Date.now(),
-        consensusEvents: [],
-        globalConfidence: 0,
-        solutionSummary: null,
-        pendingQuestion: null,
-        userProblem: '',
-        currentProblem: '',
-        isSolving: false,
-        mode: 'simulation' as SimMode,
-        // isApiMode stays as-is
-      };
-    }),
+    set((s) => ({
+      agents: resetAgents(s.agents, 0),
+      startTime: Date.now(),
+      userProblem: '',
+      currentProblem: '',
+      isSolving: false,
+      mode: 'simulation' as SimMode,
+      ...CLEAN_SLATE,
+      // isApiMode stays as-is
+    })),
 
   sendUserFeedback: (feedback) =>
     set((s) => {

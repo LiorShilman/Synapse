@@ -13,7 +13,9 @@
       "Bash(npx tsc -b --noEmit)",
       "WebSearch",
       "Read(//c/Users/shilm/Downloads/**)",
-      "Read(//c/Users/shilm/AppData/Local/Temp/claude/e--AllMyProjects-Synapse/tasks/**)"
+      "Read(//c/Users/shilm/AppData/Local/Temp/claude/e--AllMyProjects-Synapse/tasks/**)",
+      "Bash(wc -l src/**/*.ts src/**/*.tsx src/*.tsx src/*.ts)",
+      "Bash(xargs grep -l \"getSimulatedThought\\\\|getThoughtCategory\")"
     ]
   }
 }

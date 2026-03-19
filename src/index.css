@@ -1700,6 +1700,41 @@
   justify-content: flex-start;
 }
 
+/* Streaming indicator — pulsing border + cursor */
+.results-streaming {
+  border-color: rgba(79, 195, 247, 0.6);
+  box-shadow: 0 0 24px rgba(79, 195, 247, 0.15), inset 0 0 12px rgba(79, 195, 247, 0.04);
+  animation: streaming-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes streaming-pulse {
+  0%, 100% { border-color: rgba(79, 195, 247, 0.25); box-shadow: 0 0 20px rgba(79, 195, 247, 0.08); }
+  50% { border-color: rgba(79, 195, 247, 0.6); box-shadow: 0 0 28px rgba(79, 195, 247, 0.2), inset 0 0 12px rgba(79, 195, 247, 0.05); }
+}
+
+.results-writing-label {
+  font-size: 0.75rem;
+  color: #4FC3F7;
+  opacity: 0.85;
+  animation: writing-blink 1s ease-in-out infinite;
+}
+
+@keyframes writing-blink {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 0.3; }
+}
+
+.streaming-cursor {
+  color: #4FC3F7;
+  animation: cursor-blink 0.7s step-end infinite;
+  font-size: 0.85em;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 /* User feedback message in thought stream */
 .thought-entry-user {
   border-right: 3px solid var(--color-accent-blue);
