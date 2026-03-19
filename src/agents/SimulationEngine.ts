@@ -1,5 +1,5 @@
 import { AGENTS } from './agentDefinitions';
-import { generateThought, getThoughtCategory, generateConsensusSummary, generateConsensusThought, getSimulatedThought as getSimulatedReply } from '../hooks/useAgentThought';
+import { generateThought, generateReply, getThoughtCategory, generateConsensusSummary, generateConsensusThought, getSimulatedThought as getSimulatedReply } from '../hooks/useAgentThought';
 import { useSimStore } from '../store/useSimStore';
 import { playThoughtPing, playConnectionSweep, playConsensusChime } from '../hooks/useSynapseAudio';
 
@@ -108,21 +108,30 @@ async function executeTickInner() {
       useSimStore.getState().removeActiveEdge(senderId, receiverId);
     }, 2000);
 
-    // Receiver reacts after delay — uses template (not API) to avoid queue overload
-    setTimeout(() => {
+    // Receiver reacts after delay — in API mode, responds to sender's thought via API
+    setTimeout(async () => {
       const recvStore = useSimStore.getState();
       recvStore.setAgentThinking(receiverId, true);
       recvStore.updateLastActive(receiverId);
 
-      // Receiver always uses simulated thought (template) to preserve API budget for sender
       const replyOtherIds = AGENTS.filter((a) => a.id !== receiverId).map((a) => a.id);
-      const reply = getSimulatedReply(receiverId, {
-        currentProblem: recvStore.currentProblem,
-        otherAgentIds: replyOtherIds,
-      });
+      const replyContext = { currentProblem: recvStore.currentProblem, otherAgentIds: replyOtherIds };
 
+      // In API+solving mode: real deliberation (receiver responds to sender's thought)
+      // In simulation mode: template-based reply (no API calls)
+      const reply = (recvStore.isApiMode && recvStore.mode === 'solving')
+        ? await generateReply(receiverId, senderId, cleanedThought, replyContext)
+        : getSimulatedReply(receiverId, replyContext);
+
+      const recvCategory = getThoughtCategory(receiverId);
       recvStore.setAgentThought(receiverId, reply);
       recvStore.setAgentThinking(receiverId, false);
+
+      // Add the reply as a message back so other agents see it in context
+      if (recvStore.isApiMode && recvStore.mode === 'solving') {
+        recvStore.addMessage({ fromId: receiverId, toId: senderId, text: reply, category: recvCategory });
+        recvStore.addConfidence(receiverId, 1 + Math.floor(Math.random() * 3));
+      }
     }, 1500);
   }
 

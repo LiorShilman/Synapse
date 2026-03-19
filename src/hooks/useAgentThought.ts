@@ -401,6 +401,41 @@ export async function generateConsensusThought(
   return fallbacks[role] ?? 'מעבד...';
 }
 
+/** Generate a reply from receiverId specifically responding to senderThought (API mode only) */
+export async function generateReply(
+  receiverId: string,
+  senderId: string,
+  senderThought: string,
+  context: { currentProblem: string; otherAgentIds: string[] }
+): Promise<string> {
+  const store = useSimStore.getState();
+
+  if (!(store.isApiMode && store.mode === 'solving')) {
+    return getSimulatedThought(receiverId, context);
+  }
+
+  const senderDef = AGENTS.find((a) => a.id === senderId);
+  const senderName = senderDef?.name ?? senderId;
+  const systemPrompt = buildSystemPrompt(receiverId);
+  const conversationContext = buildConversationContext(receiverId);
+
+  const userMessage = `הבעיה: ${context.currentProblem}
+
+${senderName} אמר/ה: "${senderThought.slice(0, 300)}"
+
+הגב/י ספציפית לתובנה של ${senderName}. האם אתה מסכים? יש לך נקודת מבט שונה? מה אתה יכול להוסיף מתחום המומחיות שלך?${conversationContext}`;
+
+  try {
+    const result = await enqueueApiCall(
+      () => callLlmApi(systemPrompt, userMessage, 200),
+      1 // slightly higher than normal sender priority
+    );
+    return result ?? getSimulatedThought(receiverId, context);
+  } catch {
+    return getSimulatedThought(receiverId, context);
+  }
+}
+
 export async function generateThought(
   agentId: string,
   context: { currentProblem: string; otherAgentIds: string[] }
