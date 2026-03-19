@@ -423,14 +423,17 @@ export async function generateReply(
 
 ${senderName} אמר/ה: "${senderThought.slice(0, 300)}"
 
-הגב/י ספציפית לתובנה של ${senderName}. האם אתה מסכים? יש לך נקודת מבט שונה? מה אתה יכול להוסיף מתחום המומחיות שלך?${conversationContext}`;
+הגב/י ספציפית לתובנה של ${senderName}. האם אתה מסכים? יש לך נקודת מבט שונה? מה אתה יכול להוסיף מתחום המומחיות שלך?
+חשוב: אל תשאל שאלות למשתמש — זו תגובה בין סוכנים. אל תשתמש בתג [שאלה למשתמש].${conversationContext}`;
 
   try {
     const result = await enqueueApiCall(
       () => callLlmApi(systemPrompt, userMessage, 200),
       1 // slightly higher than normal sender priority
     );
-    return result ?? getSimulatedThought(receiverId, context);
+    // Strip question tags — receiver replies should never ask the user
+    const cleaned = result?.replace(/\[שאלה למשתמש:\s*.+?\]/g, '').trim();
+    return cleaned || getSimulatedThought(receiverId, context);
   } catch {
     return getSimulatedThought(receiverId, context);
   }
