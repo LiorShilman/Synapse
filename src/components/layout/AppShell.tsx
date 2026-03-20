@@ -1,9 +1,7 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { AGENTS } from '../../agents/agentDefinitions';
-import AgentNetwork3D from '../network/AgentNetwork3D';
 import AgentCard from '../dashboard/AgentCard';
 import ThoughtStream from '../dashboard/ThoughtStream';
-import LearningChart from '../dashboard/LearningChart';
 import ConsensusPanel from '../dashboard/ConsensusPanel';
 import ProblemInput from '../dashboard/ProblemInput';
 import ResultsSummary from '../dashboard/ResultsSummary';
@@ -13,6 +11,13 @@ import ErrorBoundary from './ErrorBoundary';
 import ConsensusExplosion from '../events/ConsensusExplosion';
 import GuidePage from '../guide/GuidePage';
 import ApiSettingsModal from '../settings/ApiSettingsModal';
+
+const AgentNetwork3D = lazy(() => import('../network/AgentNetwork3D'));
+const LearningChart = lazy(() => import('../dashboard/LearningChart'));
+
+function LazyFallback() {
+  return <div className="lazy-fallback">טוען...</div>;
+}
 
 export default function AppShell() {
   const [showGuide, setShowGuide] = useState(false);
@@ -30,7 +35,9 @@ export default function AppShell() {
         {/* 3D Network */}
         <div className="network-panel">
           <ErrorBoundary>
-            <AgentNetwork3D />
+            <Suspense fallback={<LazyFallback />}>
+              <AgentNetwork3D />
+            </Suspense>
           </ErrorBoundary>
         </div>
 
@@ -51,7 +58,9 @@ export default function AppShell() {
           </div>
 
           <ErrorBoundary>
-            <LearningChart />
+            <Suspense fallback={<LazyFallback />}>
+              <LearningChart />
+            </Suspense>
           </ErrorBoundary>
         </div>
       </div>

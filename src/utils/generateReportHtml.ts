@@ -1,13 +1,27 @@
 import { useSimStore } from '../store/useSimStore';
+import { AGENTS } from '../agents/agentDefinitions';
 
-const AGENT_META: Record<string, { name: string; role: string; color: string; icon: string; vizLabel: string }> = {
-  oracle: { name: 'אורקל', role: 'אנליסט ראשי', color: '#4FC3F7', icon: '🔮', vizLabel: 'ניתוח נתונים' },
-  nexus:  { name: 'נקסוס', role: 'מרכז תקשורת', color: '#B39DDB', icon: '🔗', vizLabel: 'רשת קשרים' },
-  forge:  { name: 'פורג׳', role: 'ממזג רעיונות', color: '#FF7043', icon: '⚡', vizLabel: 'יצירתיות' },
-  echo:   { name: 'אקו', role: 'זיכרון קולקטיבי', color: '#66BB6A', icon: '📡', vizLabel: 'זיכרון' },
-  cipher: { name: 'סייפר', role: 'מאמת לוגי', color: '#EF5350', icon: '🔐', vizLabel: 'אימות לוגי' },
-  sage:   { name: 'סייג׳', role: 'מסנתז חוכמה', color: '#FFEE58', icon: '🧠', vizLabel: 'סינתזה' },
+const ICON_MAP: Record<string, string> = {
+  oracle: '🔮', nexus: '🔗', forge: '⚡', echo: '📡', cipher: '🔐', sage: '🧠',
 };
+const VIZ_LABEL_MAP: Record<string, string> = {
+  oracle: 'ניתוח נתונים', nexus: 'רשת קשרים', forge: 'יצירתיות',
+  echo: 'זיכרון', cipher: 'אימות לוגי', sage: 'סינתזה',
+};
+
+interface AgentMeta { name: string; role: string; color: string; icon: string; vizLabel: string; avatar: string }
+
+const AGENT_META: Record<string, AgentMeta> = {};
+for (const a of AGENTS) {
+  AGENT_META[a.id] = {
+    name: a.name,
+    role: a.role,
+    color: a.color,
+    icon: ICON_MAP[a.id] || '●',
+    vizLabel: VIZ_LABEL_MAP[a.id] || '',
+    avatar: a.avatar,
+  };
+}
 
 const CONSENSUS_PROTOCOL = [
   'מבקש סינתזה קולקטיבית',
@@ -151,12 +165,13 @@ export function generateReportHtml(options: GenerateOptions): string {
 
   // ──── Agent cards with unique viz ────
   const agentCardsHtml = agents.map((a) => {
-    const meta = AGENT_META[a.id] ?? { name: a.id, role: '', color: '#888', icon: '●', vizLabel: '' };
+    const meta = AGENT_META[a.id] ?? { name: a.id, role: '', color: '#888', icon: '●', vizLabel: '', avatar: '' };
     const viz = agentVizHtml(a.id, a.confidence, a.currentThought, meta.color);
     return `
       <div class="agent-card" style="border-top:3px solid ${meta.color}">
         <div class="agent-header">
-          <span class="agent-icon">${meta.icon}</span>
+          <img src="${meta.avatar}" alt="${meta.name}" class="agent-avatar" style="border-color:${meta.color}" onerror="this.style.display='none';this.nextElementSibling.style.display=''">
+          <span class="agent-icon" style="display:none">${meta.icon}</span>
           <div class="agent-info">
             <span class="agent-name" style="color:${meta.color}">${meta.name}</span>
             <span class="agent-role">${meta.role}</span>
@@ -474,6 +489,7 @@ export function generateReportHtml(options: GenerateOptions): string {
     pointer-events: none;
   }
   .agent-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .agent-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: top; border: 2px solid var(--accent); flex-shrink: 0; }
   .agent-icon { font-size: 1.6rem; }
   .agent-info { flex: 1; }
   .agent-name { font-weight: 800; font-size: 1.15rem; display: block; }

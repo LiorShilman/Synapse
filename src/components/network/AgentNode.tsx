@@ -231,8 +231,11 @@ export default function AgentNode({ agent }: AgentNodeProps) {
   const avatarRef = useRef<THREE.Sprite>(null);
   const [avatarTexture, setAvatarTexture] = useState<THREE.Texture | null>(null);
 
+  const [hovered, setHovered] = useState(false);
+
   const isThinking = useSimStore((s) => s.agents[agent.id]?.isThinking);
   const confidence = useSimStore((s) => s.agents[agent.id]?.confidence ?? 0);
+  const currentThought = useSimStore((s) => s.agents[agent.id]?.currentThought ?? '');
 
   // Load avatar texture without suspense
   useEffect(() => {
@@ -359,7 +362,12 @@ export default function AgentNode({ agent }: AgentNodeProps) {
   const ringRadius3 = 0.48 + confFactor * 0.25 + ringBoost;
 
   return (
-    <group ref={groupRef} position={agent.position}>
+    <group
+      ref={groupRef}
+      position={agent.position}
+      onPointerOver={() => setHovered(true)}
+      onPointerOut={() => setHovered(false)}
+    >
       {/* Inner core — icosahedron, bright emissive for bloom */}
       <mesh ref={coreRef}>
         <icosahedronGeometry args={[0.15, 1]} />
@@ -374,6 +382,20 @@ export default function AgentNode({ agent }: AgentNodeProps) {
         />
       </mesh>
 
+      {/* Avatar backdrop — dark circle behind avatar for contrast */}
+      {avatarTexture && (
+        <mesh renderOrder={8}>
+          <circleGeometry args={[0.42, 32]} />
+          <meshBasicMaterial color="#030812" transparent opacity={0.85} depthWrite={false} />
+        </mesh>
+      )}
+      {/* Avatar colored ring — thin glow ring around avatar */}
+      {avatarTexture && (
+        <mesh renderOrder={9}>
+          <ringGeometry args={[0.38, 0.44, 48]} />
+          <meshBasicMaterial color={agent.color} transparent opacity={0.6} depthWrite={false} blending={THREE.AdditiveBlending} />
+        </mesh>
+      )}
       {/* Avatar sprite — always faces camera, centered on node */}
       {avatarTexture && (
         <sprite ref={avatarRef} scale={[0.5, 0.5, 1]} renderOrder={10}>
@@ -477,6 +499,40 @@ export default function AgentNode({ agent }: AgentNodeProps) {
           </div>
         )}
       </Html>
+
+      {/* Hover tooltip — last thought + confidence */}
+      {hovered && currentThought && (
+        <Html
+          position={[0, -(avatarTexture ? 0.6 : 0.85) - confFactor * 0.15, 0]}
+          center
+          style={{ pointerEvents: 'none', userSelect: 'none' }}
+        >
+          <div style={{
+            background: 'rgba(10, 22, 40, 0.95)',
+            border: `1px solid ${agent.color}50`,
+            borderRadius: '10px',
+            padding: '10px 16px',
+            maxWidth: '320px',
+            minWidth: '180px',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '12.5px',
+            color: '#E8F4FD',
+            lineHeight: 1.55,
+            textAlign: 'center',
+            direction: 'rtl',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            boxShadow: `0 0 16px ${agent.color}30`,
+          }}>
+            <div style={{ color: agent.color, fontWeight: 700, marginBottom: '6px', fontSize: '11.5px', letterSpacing: '0.5px' }}>
+              {agent.role} • {confidence}%
+            </div>
+            <div style={{ opacity: 0.85 }}>
+              {currentThought.length > 120 ? currentThought.slice(0, 120) + '...' : currentThought}
+            </div>
+          </div>
+        </Html>
+      )}
     </group>
   );
 }
