@@ -259,6 +259,17 @@
   box-shadow: 0 0 10px currentColor;
 }
 
+.agent-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  border: 2px solid var(--agent-color);
+  box-shadow: 0 0 12px var(--agent-color), 0 0 4px var(--agent-color);
+  flex-shrink: 0;
+}
+
 .agent-confidence-wrapper {
   display: flex;
   align-items: center;
@@ -2266,6 +2277,17 @@
   margin-bottom: 12px;
 }
 
+.guide-agent-avatar {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  border: 2px solid var(--agent-color);
+  box-shadow: 0 0 16px var(--agent-color), 0 0 6px var(--agent-color);
+}
+
 .guide-agent-icon {
   width: 44px;
   height: 44px;
@@ -2586,6 +2608,11 @@
   .agent-dot {
     width: 8px;
     height: 8px;
+  }
+
+  .agent-avatar {
+    width: 28px;
+    height: 28px;
   }
 
   .agent-role {

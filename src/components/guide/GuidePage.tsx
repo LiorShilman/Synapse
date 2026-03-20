@@ -1,14 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { AGENTS } from '../../agents/agentDefinitions';
 
-const AGENT_ICONS: Record<string, string> = {
-  oracle: '🔍',
-  nexus: '🔗',
-  forge: '🔨',
-  echo: '📚',
-  cipher: '🔒',
-  sage: '🧠',
-};
+const BASE = import.meta.env.BASE_URL;
 
 const AGENT_DETAILS: Record<string, { longDesc: string; traits: string[] }> = {
   oracle: {
@@ -127,9 +120,11 @@ export default function GuidePage({ onClose }: GuidePageProps) {
                     <div key={agent.id} className="guide-agent-card" style={{ '--agent-color': agent.color, borderColor: `${agent.color}33` } as React.CSSProperties}>
                       <div className="guide-agent-bar" style={{ background: `linear-gradient(90deg, ${agent.color}, ${agent.glowColor})` }} />
                       <div className="guide-agent-top">
-                        <div className="guide-agent-icon" style={{ background: `${agent.color}1A` }}>
-                          {AGENT_ICONS[agent.id]}
-                        </div>
+                        <img
+                          src={`${BASE}${agent.avatar}`}
+                          alt={agent.name}
+                          className="guide-agent-avatar"
+                        />
                         <div>
                           <h3 className="text-agent">{agent.name}</h3>
                           <div className="guide-agent-role text-agent">{agent.role}</div>

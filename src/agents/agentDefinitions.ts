@@ -7,6 +7,7 @@ export interface AgentDefinition {
   glowColor: string;
   position: [number, number, number];
   personality: string;
+  avatar: string;
 }
 
 // Octahedron-like layout for true 3D depth
@@ -20,6 +21,7 @@ export const AGENTS: AgentDefinition[] = [
     glowColor: '#0288D1',
     position: [0, 2.5, 0],
     personality: 'אנליטי, מדויק, מדבר בהסתברויות',
+    avatar: 'agents/oracle.png',
   },
   {
     id: 'nexus',
@@ -30,6 +32,7 @@ export const AGENTS: AgentDefinition[] = [
     glowColor: '#4527A0',
     position: [2.2, 0.5, 1.8],
     personality: 'דיפלומטי, מחבר, תמיד מתייחס לסוכנים אחרים',
+    avatar: 'agents/nexus.png',
   },
   {
     id: 'forge',
@@ -40,6 +43,7 @@ export const AGENTS: AgentDefinition[] = [
     glowColor: '#BF360C',
     position: [-2.2, 0.5, 1.8],
     personality: 'יצירתי, נועז, ממוקד פתרונות, משתמש במטאפורות',
+    avatar: 'agents/forge.png',
   },
   {
     id: 'echo',
@@ -50,6 +54,7 @@ export const AGENTS: AgentDefinition[] = [
     glowColor: '#2E7D32',
     position: [0, -2.5, 0],
     personality: 'רפלקטיבי, מתייחס לאירועי עבר, עוקב אחר התפתחות',
+    avatar: 'agents/echo.png',
   },
   {
     id: 'cipher',
@@ -60,6 +65,7 @@ export const AGENTS: AgentDefinition[] = [
     glowColor: '#B71C1C',
     position: [2.2, -0.5, -1.8],
     personality: 'ספקן, קפדן, מאתגר הנחות יסוד',
+    avatar: 'agents/cipher.png',
   },
   {
     id: 'sage',
@@ -70,6 +76,7 @@ export const AGENTS: AgentDefinition[] = [
     glowColor: '#F9A825',
     position: [-2.2, -0.5, -1.8],
     personality: 'פילוסופי, אינטגרטיבי, מסיק מסקנות סופיות',
+    avatar: 'agents/sage.png',
   },
 ];
 

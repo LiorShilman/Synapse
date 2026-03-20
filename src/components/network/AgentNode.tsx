@@ -5,6 +5,10 @@ import * as THREE from 'three';
 import { useSimStore } from '../../store/useSimStore';
 import type { AgentDefinition } from '../../agents/agentDefinitions';
 
+const BASE = import.meta.env.BASE_URL;
+const textureLoader = new THREE.TextureLoader();
+const textureCache = new Map<string, THREE.Texture>();
+
 function useIsMobile(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
   useEffect(() => {
@@ -224,8 +228,22 @@ export default function AgentNode({ agent }: AgentNodeProps) {
   const pulsePhase = useRef(0);
   const pulse2Phase = useRef(0.5);
 
+  const avatarRef = useRef<THREE.Sprite>(null);
+  const [avatarTexture, setAvatarTexture] = useState<THREE.Texture | null>(null);
+
   const isThinking = useSimStore((s) => s.agents[agent.id]?.isThinking);
   const confidence = useSimStore((s) => s.agents[agent.id]?.confidence ?? 0);
+
+  // Load avatar texture without suspense
+  useEffect(() => {
+    const url = `${BASE}${agent.avatar}`;
+    const cached = textureCache.get(url);
+    if (cached) { setAvatarTexture(cached); return; }
+    textureLoader.load(url, (tex) => {
+      textureCache.set(url, tex);
+      setAvatarTexture(tex);
+    });
+  }, [agent.avatar]);
 
   const color = useMemo(() => new THREE.Color(agent.color), [agent.color]);
   const confFactor = confidence / 100;
@@ -234,25 +252,41 @@ export default function AgentNode({ agent }: AgentNodeProps) {
     const t = Date.now();
     if (!coreRef.current || !wireRef.current) return;
 
-    // Core icosahedron: dramatic confidence-based scale (0.10 → 0.45)
-    const baseScale = 0.10 + confFactor * 0.35;
+    const hasAvatar = !!avatarTexture;
+
+    // Core icosahedron: hidden when avatar present, otherwise dramatic scale
     const thinkPulse = isThinking
       ? 1 + Math.sin(t * 0.008) * 0.25
       : 1 + Math.sin(t * 0.002) * 0.04;
-    coreRef.current.scale.setScalar(baseScale / 0.15 * thinkPulse);
-    coreRef.current.rotation.y += isThinking ? 0.02 : 0.003;
-    coreRef.current.rotation.x += 0.001;
-
     const coreMat = coreRef.current.material as THREE.MeshPhongMaterial;
-    coreMat.emissiveIntensity = 0.8 + confFactor * 2.0 + (isThinking ? Math.sin(t * 0.01) * 0.6 : 0);
+    if (hasAvatar) {
+      // Hide core — avatar replaces it
+      coreRef.current.scale.setScalar(0.001);
+      coreMat.opacity = 0;
+    } else {
+      const baseScale = 0.10 + confFactor * 0.35;
+      coreRef.current.scale.setScalar(baseScale / 0.15 * thinkPulse);
+      coreRef.current.rotation.y += isThinking ? 0.02 : 0.003;
+      coreRef.current.rotation.x += 0.001;
+      coreMat.emissiveIntensity = 0.8 + confFactor * 2.0 + (isThinking ? Math.sin(t * 0.01) * 0.6 : 0);
+      coreMat.opacity = 0.95;
+    }
 
-    // Wireframe shell: counter-rotates, scales with confidence
-    const wireScale = (0.18 + confFactor * 0.35) / 0.22;
-    wireRef.current.scale.setScalar(wireScale * (1 + Math.sin(t * 0.003) * 0.08));
-    wireRef.current.rotation.y -= isThinking ? 0.015 : 0.002;
-    wireRef.current.rotation.z += 0.001;
+    // Wireframe shell: subtle thin halo when avatar present
     const wireMat = wireRef.current.material as THREE.MeshBasicMaterial;
-    wireMat.opacity = 0.2 + confFactor * 0.4 + (isThinking ? 0.3 : 0);
+    if (hasAvatar) {
+      const wireScale = (0.45 + confFactor * 0.45) / 0.22;
+      wireRef.current.scale.setScalar(wireScale * (1 + Math.sin(t * 0.003) * 0.04));
+      wireRef.current.rotation.y -= isThinking ? 0.01 : 0.002;
+      wireRef.current.rotation.z += 0.001;
+      wireMat.opacity = 0.08 + confFactor * 0.12 + (isThinking ? 0.1 : 0);
+    } else {
+      const wireScale = (0.18 + confFactor * 0.35) / 0.22;
+      wireRef.current.scale.setScalar(wireScale * (1 + Math.sin(t * 0.003) * 0.08));
+      wireRef.current.rotation.y -= isThinking ? 0.015 : 0.002;
+      wireRef.current.rotation.z += 0.001;
+      wireMat.opacity = 0.2 + confFactor * 0.4 + (isThinking ? 0.3 : 0);
+    }
 
     // Dual expanding pulse waves when thinking (staggered)
     [
@@ -295,12 +329,21 @@ export default function AgentNode({ agent }: AgentNodeProps) {
       r3Mat.opacity = isThinking ? 0.35 : 0.05 + confFactor * 0.15;
     }
 
-    // Light — dramatic
+    // Light — dramatic (dimmer when avatar loaded to prevent bloom washout)
     if (lightRef.current) {
-      lightRef.current.intensity = isThinking
+      const lightScale = avatarTexture ? 0.4 : 1;
+      lightRef.current.intensity = (isThinking
         ? 2.5 + confFactor * 4 + Math.sin(t * 0.01) * 1.5
-        : 1 + confFactor * 3;
+        : 1 + confFactor * 3) * lightScale;
       lightRef.current.distance = 4 + confFactor * 5;
+    }
+
+    // Avatar sprite — the hero visual, large and prominent
+    if (avatarRef.current) {
+      const avatarSize = (0.7 + confFactor * 0.5) * thinkPulse;
+      avatarRef.current.scale.set(avatarSize, avatarSize, 1);
+      const avMat = avatarRef.current.material as THREE.SpriteMaterial;
+      avMat.opacity = 0.9 + confFactor * 0.1;
     }
 
     // Subtle float
@@ -309,9 +352,11 @@ export default function AgentNode({ agent }: AgentNodeProps) {
     }
   });
 
-  const ringRadius1 = 0.28 + confFactor * 0.35;
-  const ringRadius2 = 0.38 + confFactor * 0.30;
-  const ringRadius3 = 0.48 + confFactor * 0.25;
+  // Push rings outward when avatar is present so they frame the portrait
+  const ringBoost = avatarTexture ? 0.25 : 0;
+  const ringRadius1 = 0.28 + confFactor * 0.35 + ringBoost;
+  const ringRadius2 = 0.38 + confFactor * 0.30 + ringBoost;
+  const ringRadius3 = 0.48 + confFactor * 0.25 + ringBoost;
 
   return (
     <group ref={groupRef} position={agent.position}>
@@ -328,6 +373,18 @@ export default function AgentNode({ agent }: AgentNodeProps) {
           flatShading
         />
       </mesh>
+
+      {/* Avatar sprite — always faces camera, centered on node */}
+      {avatarTexture && (
+        <sprite ref={avatarRef} scale={[0.5, 0.5, 1]} renderOrder={10}>
+          <spriteMaterial
+            map={avatarTexture}
+            transparent
+            opacity={0.9}
+            depthWrite={false}
+          />
+        </sprite>
+      )}
 
       {/* Wireframe shell — icosahedron wireframe */}
       <mesh ref={wireRef}>
@@ -389,7 +446,7 @@ export default function AgentNode({ agent }: AgentNodeProps) {
 
       {/* Agent label */}
       <Html
-        position={[0, 0.85 + confFactor * 0.25, 0]}
+        position={[0, (avatarTexture ? 0.55 : 0.85) + confFactor * 0.25, 0]}
         center
         style={{ pointerEvents: 'none', userSelect: 'none' }}
         className="agent-label-3d"

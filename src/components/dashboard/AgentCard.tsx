@@ -59,9 +59,11 @@ export default function AgentCard({ agentId }: AgentCardProps) {
       {/* כותרת */}
       <div className="agent-card-header">
         <div className="agent-card-name">
-          <span
-            className="agent-dot"
-            style={{ backgroundColor: agentDef.color }}
+          <img
+            src={`${import.meta.env.BASE_URL}${agentDef.avatar}`}
+            alt={agentDef.name}
+            className="agent-avatar"
+            style={{ '--agent-color': agentDef.color } as React.CSSProperties}
           />
           {agentDef.name}
         </div>
