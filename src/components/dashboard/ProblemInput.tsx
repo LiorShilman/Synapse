@@ -19,7 +19,7 @@ const CATEGORIES = [
     id: 'business',
     label: 'עסקים',
     icon: '📊',
-    color: '#CE93D8',
+    color: '#B39DDB',
     examples: [
       'האם להיכנס לשוק חדש או להעמיק בשוק הקיים?',
       'B2B או B2C — מה מתאים למוצר SaaS חדש?',
@@ -31,7 +31,7 @@ const CATEGORIES = [
     id: 'career',
     label: 'קריירה',
     icon: '🎯',
-    color: '#FFAB40',
+    color: '#FF7043',
     examples: [
       'לעבור לתפקיד ניהולי או להישאר hands-on?',
       'האם לעזוב עבודה יציבה בשביל סטארטאפ?',
@@ -55,7 +55,7 @@ const CATEGORIES = [
     id: 'education',
     label: 'חינוך',
     icon: '📚',
-    color: '#EF9A9A',
+    color: '#EF5350',
     examples: [
       'למידה מרחוק או פרונטלית — מה יעיל יותר?',
       'האם לשלב AI בתהליכי הוראה?',
@@ -67,7 +67,7 @@ const CATEGORIES = [
     id: 'management',
     label: 'ניהול',
     icon: '👥',
-    color: '#FFD54F',
+    color: '#FFEE58',
     examples: [
       'צוות מרוחק או משרד — מה מניב תוצאות טובות יותר?',
       'Agile או Waterfall — מתי כל גישה מתאימה?',

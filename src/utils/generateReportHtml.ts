@@ -2,11 +2,11 @@ import { useSimStore } from '../store/useSimStore';
 
 const AGENT_META: Record<string, { name: string; role: string; color: string; icon: string; vizLabel: string }> = {
   oracle: { name: 'אורקל', role: 'אנליסט ראשי', color: '#4FC3F7', icon: '🔮', vizLabel: 'ניתוח נתונים' },
-  nexus:  { name: 'נקסוס', role: 'מרכז תקשורת', color: '#CE93D8', icon: '🔗', vizLabel: 'רשת קשרים' },
-  forge:  { name: 'פורג׳', role: 'ממזג רעיונות', color: '#FFAB40', icon: '⚡', vizLabel: 'יצירתיות' },
+  nexus:  { name: 'נקסוס', role: 'מרכז תקשורת', color: '#B39DDB', icon: '🔗', vizLabel: 'רשת קשרים' },
+  forge:  { name: 'פורג׳', role: 'ממזג רעיונות', color: '#FF7043', icon: '⚡', vizLabel: 'יצירתיות' },
   echo:   { name: 'אקו', role: 'זיכרון קולקטיבי', color: '#66BB6A', icon: '📡', vizLabel: 'זיכרון' },
-  cipher: { name: 'סייפר', role: 'מאמת לוגי', color: '#EF9A9A', icon: '🔐', vizLabel: 'אימות לוגי' },
-  sage:   { name: 'סייג׳', role: 'מסנתז חוכמה', color: '#FFD54F', icon: '🧠', vizLabel: 'סינתזה' },
+  cipher: { name: 'סייפר', role: 'מאמת לוגי', color: '#EF5350', icon: '🔐', vizLabel: 'אימות לוגי' },
+  sage:   { name: 'סייג׳', role: 'מסנתז חוכמה', color: '#FFEE58', icon: '🧠', vizLabel: 'סינתזה' },
 };
 
 const CONSENSUS_PROTOCOL = [
@@ -72,7 +72,7 @@ function agentVizHtml(agentId: string, confidence: number, thought: string, colo
           return `<div class="viz-pip"><span class="viz-pip-dot" style="background:${m?.color || '#888'}"></span><span class="viz-pip-name">${m?.name || a.id}</span><span class="viz-pip-conf" style="color:${m?.color || '#888'}">${a.confidence}%</span></div>`;
         }).join('');
       return `<div class="viz-sage">${pips}
-        <div class="viz-synthesis-bar"><div class="viz-synthesis-fill" style="width:${confidence}%;background:linear-gradient(90deg,${color},#FFAB40)"></div></div></div>`;
+        <div class="viz-synthesis-bar"><div class="viz-synthesis-fill" style="width:${confidence}%;background:linear-gradient(90deg,${color},#FF7043)"></div></div></div>`;
     }
     case 'cipher': {
       const checks = [
@@ -321,7 +321,7 @@ export function generateReportHtml(options: GenerateOptions): string {
   .hero-title {
     font-size: 2.6rem;
     font-weight: 900;
-    background: linear-gradient(135deg, #4FC3F7 0%, #CE93D8 40%, #FFAB40 70%, #66BB6A 100%);
+    background: linear-gradient(135deg, #4FC3F7 0%, #B39DDB 40%, #FF7043 70%, #66BB6A 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -516,7 +516,7 @@ export function generateReportHtml(options: GenerateOptions): string {
   .viz-check { display: flex; align-items: center; gap: 4px; font-size: 0.85rem; color: var(--text-secondary); background: rgba(239,154,154,0.06); border-radius: 6px; padding: 4px 10px; }
   .viz-check-icon { font-weight: 900; font-size: 1rem; }
   .viz-pass { color: #66BB6A; }
-  .viz-fail { color: #EF9A9A; }
+  .viz-fail { color: #EF5350; }
 
   .viz-echo { display: flex; align-items: center; gap: 16px; }
   .viz-mem-counter { display: flex; flex-direction: column; align-items: center; background: rgba(102,187,106,0.08); border-radius: 10px; padding: 8px 14px; }
@@ -579,7 +579,7 @@ export function generateReportHtml(options: GenerateOptions): string {
     padding: 12px 18px;
   }
   .msg-user { background: rgba(79,195,247,0.04); border-right-color: #81D4FA; }
-  .msg-synthesis { background: rgba(255,213,79,0.04); border-right-color: #FFD54F; }
+  .msg-synthesis { background: rgba(255,213,79,0.04); border-right-color: #FFEE58; }
   .msg-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 0.85rem; }
   .msg-num { color: var(--text-muted); font-size: 0.75rem; min-width: 32px; }
   .msg-icon { font-size: 1rem; }
@@ -601,7 +601,7 @@ export function generateReportHtml(options: GenerateOptions): string {
   }
   .footer-brand {
     font-size: 1.8rem; font-weight: 900;
-    background: linear-gradient(135deg, #4FC3F7, #CE93D8, #FFAB40);
+    background: linear-gradient(135deg, #4FC3F7, #B39DDB, #FF7043);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text; margin-bottom: 8px;
   }

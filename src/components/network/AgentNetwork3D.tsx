@@ -233,7 +233,7 @@ function EnergyDome() {
       </mesh>
       <mesh ref={innerRef}>
         <icosahedronGeometry args={[1, 1]} />
-        <meshBasicMaterial color="#CE93D8" transparent opacity={0.02} wireframe />
+        <meshBasicMaterial color="#B39DDB" transparent opacity={0.02} wireframe />
       </mesh>
     </group>
   );
@@ -328,7 +328,7 @@ export default function AgentNetwork3D() {
         {/* Lighting */}
         <ambientLight color="#0A1030" intensity={0.8} />
         <directionalLight position={[5, 5, 5]} intensity={0.3} color="#4A6A8A" />
-        <directionalLight position={[-3, -2, 4]} intensity={0.15} color="#CE93D8" />
+        <directionalLight position={[-3, -2, 4]} intensity={0.15} color="#B39DDB" />
 
         {/* Background click to clear focus */}
         <BackgroundClickPlane />

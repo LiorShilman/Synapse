@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { useSimStore } from '../../store/useSimStore';
+import { useTypewriter } from '../../hooks/useTypewriter';
 
 interface ForgeCreativeVizProps {
   thought: string;
@@ -10,14 +11,14 @@ function getForgePhase(thought: string): { text: string; color: string } {
   if (thought.includes('מוכנה') || thought.includes('נוצר') || thought.includes('הסופית'))
     return { text: 'FORGED', color: '#66BB6A' };
   if (thought.includes('מתגבש') || thought.includes('אב-טיפוס') || thought.includes('מתגלה'))
-    return { text: 'SHAPING', color: '#FFAB40' };
+    return { text: 'SHAPING', color: '#FF7043' };
   if (thought.includes('שביר') || thought.includes('יקר') || thought.includes('פשרה'))
-    return { text: 'STRESS TEST', color: '#EF9A9A' };
+    return { text: 'STRESS TEST', color: '#EF5350' };
   if (thought.includes('מסגרת') || thought.includes('ארכיטקטוני') || thought.includes('פירוק'))
     return { text: 'BLUEPRINT', color: '#4FC3F7' };
   if (thought.includes('היברידי') || thought.includes('מיזוג') || thought.includes('שילוב'))
-    return { text: 'FUSION', color: '#CE93D8' };
-  return { text: 'CRAFTING', color: '#FFAB40' };
+    return { text: 'FUSION', color: '#B39DDB' };
+  return { text: 'CRAFTING', color: '#FF7043' };
 }
 
 // Heat level from thought content
@@ -35,6 +36,7 @@ export default function ForgeCreativeViz({ thought }: ForgeCreativeVizProps) {
   const messages = useSimStore((s) => s.messages);
   const phase = useMemo(() => getForgePhase(thought), [thought]);
   const heat = useMemo(() => getHeatLevel(thought), [thought]);
+  const displayedThought = useTypewriter(thought, 20);
 
   // Forge stats
   const forgeMessages = messages.filter((m) => m.fromId === 'forge');
@@ -46,7 +48,7 @@ export default function ForgeCreativeViz({ thought }: ForgeCreativeVizProps) {
   ).length;
 
   // Heat color gradient
-  const heatColor = heat >= 75 ? '#EF9A9A' : heat >= 50 ? '#FFAB40' : '#4FC3F7';
+  const heatColor = heat >= 75 ? '#EF5350' : heat >= 50 ? '#FF7043' : '#4FC3F7';
 
   if (!thought) return <div className="agent-thought">...</div>;
 
@@ -76,7 +78,7 @@ export default function ForgeCreativeViz({ thought }: ForgeCreativeVizProps) {
           {Array.from({ length: 15 }).map((_, i) => {
             const threshold = ((i + 1) / 15) * 100;
             const active = heat >= threshold;
-            const segColor = threshold <= 33 ? '#4FC3F7' : threshold <= 66 ? '#FFAB40' : '#EF9A9A';
+            const segColor = threshold <= 33 ? '#4FC3F7' : threshold <= 66 ? '#FF7043' : '#EF5350';
             return (
               <motion.div
                 key={i}
@@ -110,7 +112,7 @@ export default function ForgeCreativeViz({ thought }: ForgeCreativeVizProps) {
       </div>
 
       {/* Thought */}
-      <div className="forge-thought-text">{thought}</div>
+      <div className="forge-thought-text">{displayedThought}</div>
     </div>
   );
 }

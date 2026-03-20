@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { AGENTS } from '../../agents/agentDefinitions';
 import { useSimStore } from '../../store/useSimStore';
+import { useTypewriter } from '../../hooks/useTypewriter';
 
 interface SageSynthesisVizProps {
   thought: string;
@@ -11,23 +12,24 @@ interface SageSynthesisVizProps {
 // Determine Sage's current phase from thought content
 function getSagePhase(thought: string): { text: string; color: string } {
   if (thought.includes('סינתזה') || thought.includes('אינטגרציה') || thought.includes('שש'))
-    return { text: 'SYNTHESIS', color: '#FFD54F' };
+    return { text: 'SYNTHESIS', color: '#FFEE58' };
   if (thought.includes('קונצנזוס') || thought.includes('מבקש') || thought.includes('הגישו'))
     return { text: 'CONSENSUS', color: '#66BB6A' };
   if (thought.includes('זהירות') || thought.includes('מחלוקת') || thought.includes('לא-נכונה'))
-    return { text: 'CHALLENGE', color: '#EF9A9A' };
+    return { text: 'CHALLENGE', color: '#EF5350' };
   if (thought.includes('חוכמה') || thought.includes('פרדוקס') || thought.includes('אמת'))
-    return { text: 'WISDOM', color: '#CE93D8' };
+    return { text: 'WISDOM', color: '#B39DDB' };
   if (thought.includes('דפוס') || thought.includes('מבחין') || thought.includes('צמיחה'))
     return { text: 'INSIGHT', color: '#4FC3F7' };
   if (thought.includes('שאלה') || thought.includes('מה'))
-    return { text: 'INQUIRY', color: '#FFAB40' };
-  return { text: 'INTEGRATING', color: '#FFD54F' };
+    return { text: 'INQUIRY', color: '#FF7043' };
+  return { text: 'INTEGRATING', color: '#FFEE58' };
 }
 
 export default function SageSynthesisViz({ thought }: SageSynthesisVizProps) {
   const agents = useSimStore((s) => s.agents);
   const phase = useMemo(() => getSagePhase(thought), [thought]);
+  const displayedThought = useTypewriter(thought, 20);
 
   // Other 5 agents (not sage)
   const otherAgents = AGENTS.filter((a) => a.id !== 'sage');
@@ -90,7 +92,7 @@ export default function SageSynthesisViz({ thought }: SageSynthesisVizProps) {
       </div>
 
       {/* Thought text */}
-      <div className="sage-thought-text">{thought}</div>
+      <div className="sage-thought-text">{displayedThought}</div>
     </div>
   );
 }

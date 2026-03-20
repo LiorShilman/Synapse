@@ -80,11 +80,11 @@ export function playThoughtPing(agentColor: string) {
   // Map agent color to a frequency
   const colorFreqMap: Record<string, number> = {
     '#4FC3F7': 523,  // Oracle — C5
-    '#CE93D8': 587,  // Nexus — D5
-    '#FFAB40': 659,  // Forge — E5
+    '#B39DDB': 587,  // Nexus — D5
+    '#FF7043': 659,  // Forge — E5
     '#66BB6A': 698,  // Echo — F5
-    '#EF9A9A': 784,  // Cipher — G5
-    '#FFD54F': 880,  // Sage — A5
+    '#EF5350': 784,  // Cipher — G5
+    '#FFEE58': 880,  // Sage — A5
   };
   const freq = colorFreqMap[agentColor] ?? 600;
 

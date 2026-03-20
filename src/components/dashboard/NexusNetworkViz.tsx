@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { AGENTS } from '../../agents/agentDefinitions';
 import { useSimStore } from '../../store/useSimStore';
+import { useTypewriter } from '../../hooks/useTypewriter';
 
 interface NexusNetworkVizProps {
   thought: string;
@@ -11,12 +12,12 @@ function getNexusPhase(thought: string): { text: string; color: string } {
   if (thought.includes('מסונכרנים') || thought.includes('קוהרנטיות') || thought.includes('קונצנזוס'))
     return { text: 'SYNCED', color: '#66BB6A' };
   if (thought.includes('פער') || thought.includes('סילו') || thought.includes('השהיה'))
-    return { text: 'DISRUPTION', color: '#EF9A9A' };
+    return { text: 'DISRUPTION', color: '#EF5350' };
   if (thought.includes('ניתוב') || thought.includes('עדכון') || thought.includes('מבקש'))
     return { text: 'ROUTING', color: '#4FC3F7' };
   if (thought.includes('התאמה') || thought.includes('קורלציה') || thought.includes('מתכנסים'))
-    return { text: 'CONVERGING', color: '#FFD54F' };
-  return { text: 'MONITORING', color: '#CE93D8' };
+    return { text: 'CONVERGING', color: '#FFEE58' };
+  return { text: 'MONITORING', color: '#B39DDB' };
 }
 
 // Simple 2D positions for 5 nodes (pentagon) — excluding nexus itself
@@ -32,6 +33,7 @@ export default function NexusNetworkViz({ thought }: NexusNetworkVizProps) {
   const messages = useSimStore((s) => s.messages);
   const activeEdges = useSimStore((s) => s.activeEdges);
   const phase = useMemo(() => getNexusPhase(thought), [thought]);
+  const displayedThought = useTypewriter(thought, 20);
 
   const otherAgents = AGENTS.filter((a) => a.id !== 'nexus');
 
@@ -91,7 +93,7 @@ export default function NexusNetworkViz({ thought }: NexusNetworkVizProps) {
               const posA = NODE_POSITIONS[i];
               const posB = NODE_POSITIONS[i + j + 1];
               const opacity = isActive ? 0.8 : activity > 0 ? 0.15 + Math.min(activity * 0.1, 0.3) : 0.06;
-              const stroke = isActive ? '#CE93D8' : '#4A6A8A';
+              const stroke = isActive ? '#B39DDB' : '#4A6A8A';
               return (
                 <motion.line
                   key={key}
@@ -134,7 +136,7 @@ export default function NexusNetworkViz({ thought }: NexusNetworkVizProps) {
           {/* Nexus center point */}
           <motion.circle
             cx={50} cy={43} r={4}
-            fill="#CE93D8"
+            fill="#B39DDB"
             opacity={0.8}
             animate={{ scale: [0.75, 1.1, 0.75], opacity: [0.6, 1, 0.6] }}
             transition={{ duration: 2, repeat: Infinity }}
@@ -158,7 +160,7 @@ export default function NexusNetworkViz({ thought }: NexusNetworkVizProps) {
       </div>
 
       {/* Thought */}
-      <div className="nexus-thought-text">{thought}</div>
+      <div className="nexus-thought-text">{displayedThought}</div>
     </div>
   );
 }

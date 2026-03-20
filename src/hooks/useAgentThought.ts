@@ -387,18 +387,60 @@ export async function generateConsensusThought(
   role: 'initiate' | 'coordinate' | 'validate-pass' | 'validate-fail' | 'store'
 ): Promise<string> {
   const store = useSimStore.getState();
+  const problem = store.currentProblem;
+  const avgConf = store.globalConfidence;
+  const agentStates = store.agents;
 
-  const fallbacks: Record<string, string> = {
-    'initiate': `בדיקת קונצנזוס: סוקר את מצב הדיון בנושא ${store.currentProblem}`,
-    'coordinate': `מרכז תובנות: מזהה נקודות הסכמה בין הסוכנים בנושא ${store.currentProblem}`,
-    'validate-pass': `אימות לוגי הושלם ✓ — הטיעונים עקביים ומבוססים`,
-    'validate-fail': `אימות לוגי: סף הביטחון טרם הושג — נדרש דיון נוסף`,
-    'store': `שומר קונצנזוס: התובנות בנושא ${store.currentProblem} נשמרו בזיכרון הקולקטיבי`,
+  // Find agents with highest/lowest confidence for contextual templates
+  const sorted = AGENTS.map((a) => ({ name: a.name, conf: agentStates[a.id]?.confidence ?? 0 }))
+    .sort((a, b) => b.conf - a.conf);
+  const strongest = sorted[0];
+  const weakest = sorted[sorted.length - 1];
+  const agreeing = sorted.filter((a) => a.conf >= 70).length;
+
+  // Varied templates per role with real contextual data
+  const templates: Record<string, string[]> = {
+    'initiate': [
+      `בדיקת קונצנזוס: ${agreeing} מתוך ${AGENTS.length} סוכנים מעל סף ביטחון בנושא ${problem}`,
+      `יוזם בדיקת הסכמה — ${strongest.name} מוביל עם ${strongest.conf}%, ${weakest.name} נמוך ב-${weakest.conf}%`,
+      `מפעיל פרוטוקול סינתזה: ביטחון ממוצע ${avgConf}% — ${avgConf >= 70 ? 'קרובים להסכמה' : 'נדרש חיזוק'} בנושא ${problem}`,
+      `סוקר עמדות: הפער בין ${strongest.name} ל${weakest.name} עומד על ${strongest.conf - weakest.conf} נקודות — ${problem}`,
+      `מנתח התכנסות: ${agreeing >= 4 ? 'רוב הסוכנים מיושרים' : 'טרם הושגה קריטית'} בנושא ${problem}`,
+    ],
+    'coordinate': [
+      `מרכז תובנות: ${strongest.name} ו${sorted[1]?.name} מובילים את ההסכמה בנושא ${problem}`,
+      `ממפה צמתי הסכמה: ${agreeing} סוכנים מעל 70%, ביטחון רשת ${avgConf}% — ${problem}`,
+      `מנתב זרימת מידע: מחבר בין ${weakest.name} (${weakest.conf}%) לתובנות הקולקטיב בנושא ${problem}`,
+      `בודק קוהרנטיות: פער של ${strongest.conf - weakest.conf} נקודות בין הסוכנים — ${problem}`,
+      `מרכז ${AGENTS.length} פרספקטיבות: ${avgConf >= 65 ? 'מגמת התכנסות חיובית' : 'פיזור דעות'} בנושא ${problem}`,
+    ],
+    'validate-pass': [
+      `אימות לוגי ✓ — ${agreeing} סוכנים מעל סף ביטחון, ממוצע ${avgConf}%`,
+      `בדיקת עקביות עברה ✓ — ${strongest.name} מוביל ב-${strongest.conf}%, כל הסוכנים מעל 70%`,
+      `אימות פורמלי: שרשרת ההנמקה תקינה — פער מינימלי של ${strongest.conf - weakest.conf} נקודות בין הסוכנים`,
+      `מטריצת קוהרנטיות חיובית ✓ — ביטחון ממוצע ${avgConf}% מאשר הסכמה בנושא ${problem}`,
+      `סריקה לוגית סופית: ${AGENTS.length}/${AGENTS.length} סוכנים מעל סף — מוכן לסינתזה`,
+    ],
+    'validate-fail': [
+      `אימות לוגי: ${weakest.name} ב-${weakest.conf}% בלבד — סף הביטחון לא הושג`,
+      `זוהו פערים: רק ${agreeing} מתוך ${AGENTS.length} מעל 70% — נדרש סיבוב נוסף`,
+      `בדיקת עקביות: ${weakest.name} ו${sorted[sorted.length - 2]?.name} מפגרים — ביטחון ${avgConf}% לא מספיק`,
+      `אימות נכשל — פער של ${strongest.conf - weakest.conf} נקודות בין ${strongest.name} ל${weakest.name}`,
+      `סריקה לוגית: ${AGENTS.length - agreeing} סוכנים מתחת לסף — נדרש חיזוק הטיעונים בנושא ${problem}`,
+    ],
+    'store': [
+      `שומר קונצנזוס: ${agreeing} עמדות מיושרות בנושא ${problem} נשמרו בזיכרון הקולקטיבי`,
+      `ארכיון: תיעוד הסכמה ברמת ${avgConf}% — ${strongest.name} תרם את התובנה המובילה`,
+      `זיכרון קולקטיבי עודכן — ${problem}: פער סופי ${strongest.conf - weakest.conf} נקודות`,
+      `שומר מצב: ${AGENTS.length} פרספקטיבות על ${problem} נקלטו — ביטחון ממוצע ${avgConf}%`,
+      `מתעד תובנות מפתח: ${strongest.name} (${strongest.conf}%) הוביל את ההסכמה בנושא ${problem}`,
+    ],
   };
 
-  // Always use fallbacks for consensus-phase thoughts to preserve API budget
+  // Always use templates for consensus-phase thoughts to preserve API budget
   // for the important consensus summary call (avoids rate limiting)
-  return fallbacks[role] ?? 'מעבד...';
+  const options = templates[role];
+  return options ? pickRandom(options) : 'מעבד...';
 }
 
 /** Generate a reply from receiverId specifically responding to senderThought (API mode only) */

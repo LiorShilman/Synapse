@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
+import { useTypewriter } from '../../hooks/useTypewriter';
 
 interface OracleDataVizProps {
   thought: string;
@@ -22,7 +23,7 @@ function extractMetrics(thought: string): ExtractedMetric[] {
   if (pctMatches) {
     for (const m of pctMatches) {
       const val = parseInt(m);
-      const color = val >= 75 ? '#66BB6A' : val >= 50 ? '#FFD54F' : '#EF9A9A';
+      const color = val >= 75 ? '#66BB6A' : val >= 50 ? '#FFEE58' : '#EF5350';
       // Try to find a label before the number
       const idx = thought.indexOf(m);
       const before = thought.slice(Math.max(0, idx - 30), idx).trim();
@@ -46,7 +47,7 @@ function extractMetrics(thought: string): ExtractedMetric[] {
       label: 'R²',
       value: Math.round(val * 100),
       suffix: '',
-      color: val >= 0.8 ? '#66BB6A' : val >= 0.5 ? '#FFD54F' : '#EF9A9A',
+      color: val >= 0.8 ? '#66BB6A' : val >= 0.5 ? '#FFEE58' : '#EF5350',
     });
   }
 
@@ -68,19 +69,20 @@ function extractMetrics(thought: string): ExtractedMetric[] {
 function getAnalysisStatus(thought: string): { text: string; color: string } {
   const lower = thought.toLowerCase();
   if (lower.includes('אזהרה') || lower.includes('סיכון') || lower.includes('התאמת-יתר'))
-    return { text: 'ALERT', color: '#EF9A9A' };
+    return { text: 'ALERT', color: '#EF5350' };
   if (lower.includes('מאשר') || lower.includes('הושלם') || lower.includes('מיושרים') || lower.includes('מתכנס'))
     return { text: 'CONFIRMED', color: '#66BB6A' };
   if (lower.includes('סימולציה') || lower.includes('ניתוח') || lower.includes('פירוק'))
     return { text: 'PROCESSING', color: '#4FC3F7' };
   if (lower.includes('שאלה') || lower.includes('האם'))
-    return { text: 'QUERY', color: '#CE93D8' };
+    return { text: 'QUERY', color: '#B39DDB' };
   return { text: 'ANALYZING', color: '#4FC3F7' };
 }
 
 export default function OracleDataViz({ thought, confidence }: OracleDataVizProps) {
   const metrics = useMemo(() => extractMetrics(thought), [thought]);
   const status = useMemo(() => getAnalysisStatus(thought), [thought]);
+  const displayedThought = useTypewriter(thought, 20);
 
   if (!thought) return <div className="agent-thought">...</div>;
 
@@ -141,7 +143,7 @@ export default function OracleDataViz({ thought, confidence }: OracleDataVizProp
           {Array.from({ length: 20 }).map((_, i) => {
             const threshold = (i + 1) * 5;
             const active = confidence >= threshold;
-            const segColor = threshold <= 40 ? '#EF9A9A' : threshold <= 70 ? '#FFD54F' : '#66BB6A';
+            const segColor = threshold <= 40 ? '#EF5350' : threshold <= 70 ? '#FFEE58' : '#66BB6A';
             return (
               <motion.div
                 key={i}
@@ -159,7 +161,7 @@ export default function OracleDataViz({ thought, confidence }: OracleDataVizProp
       </div>
 
       {/* Thought text — smaller, as supporting context */}
-      <div className="oracle-thought-text">{thought}</div>
+      <div className="oracle-thought-text">{displayedThought}</div>
     </div>
   );
 }

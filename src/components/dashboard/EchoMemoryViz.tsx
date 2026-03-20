@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { useSimStore } from '../../store/useSimStore';
 import { AGENTS } from '../../agents/agentDefinitions';
+import { useTypewriter } from '../../hooks/useTypewriter';
 
 interface EchoMemoryVizProps {
   thought: string;
@@ -13,11 +14,11 @@ function getMemoryPhase(thought: string): { text: string; color: string } {
   if (thought.includes('זיהוי') || thought.includes('דפוס') || thought.includes('לולאת'))
     return { text: 'PATTERN', color: '#4FC3F7' };
   if (thought.includes('נזכר') || thought.includes('היסטורי') || thought.includes('תקדים'))
-    return { text: 'RECALL', color: '#CE93D8' };
+    return { text: 'RECALL', color: '#B39DDB' };
   if (thought.includes('אזהרה') || thought.includes('סותרים') || thought.includes('מבוי'))
-    return { text: 'CONFLICT', color: '#EF9A9A' };
+    return { text: 'CONFLICT', color: '#EF5350' };
   if (thought.includes('למידה') || thought.includes('מטא') || thought.includes('פיתול'))
-    return { text: 'LEARNING', color: '#FFD54F' };
+    return { text: 'LEARNING', color: '#FFEE58' };
   return { text: 'SCANNING', color: '#66BB6A' };
 }
 
@@ -25,6 +26,7 @@ export default function EchoMemoryViz({ thought }: EchoMemoryVizProps) {
   const messages = useSimStore((s) => s.messages);
   const tickCount = useSimStore((s) => s.tickCount);
   const phase = useMemo(() => getMemoryPhase(thought), [thought]);
+  const displayedThought = useTypewriter(thought, 20);
 
   // Memory bank stats from echo's message history
   const echoMessages = messages.filter((m) => m.fromId === 'echo');
@@ -125,7 +127,7 @@ export default function EchoMemoryViz({ thought }: EchoMemoryVizProps) {
       )}
 
       {/* Thought */}
-      <div className="echo-thought-text">{thought}</div>
+      <div className="echo-thought-text">{displayedThought}</div>
     </div>
   );
 }

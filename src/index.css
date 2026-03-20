@@ -133,7 +133,7 @@
   font-family: var(--font-display);
   font-size: 1.75rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--color-accent-blue), #CE93D8);
+  background: linear-gradient(135deg, var(--color-accent-blue), #B39DDB);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -550,7 +550,7 @@
 .sage-synthesis-fill {
   height: 100%;
   border-radius: 4px;
-  background: linear-gradient(90deg, #FFD54F, #FFAB40);
+  background: linear-gradient(90deg, #FFEE58, #FF7043);
   position: relative;
 }
 
@@ -918,7 +918,7 @@
 .nexus-clarity-fill {
   height: 100%;
   border-radius: 3px;
-  background: linear-gradient(90deg, #CE93D8, #4FC3F7);
+  background: linear-gradient(90deg, #B39DDB, #4FC3F7);
 }
 
 .nexus-thought-text {
@@ -1304,7 +1304,7 @@
   font-size: 2.5rem;
   font-weight: 700;
   letter-spacing: 4px;
-  background: linear-gradient(135deg, var(--color-accent-blue), #CE93D8, #FFD54F);
+  background: linear-gradient(135deg, var(--color-accent-blue), #B39DDB, #FFEE58);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1475,7 +1475,7 @@
 .problem-btn-reset {
   background: transparent;
   border-color: rgba(239, 83, 80, 0.3);
-  color: #EF9A9A;
+  color: #EF5350;
 }
 
 .problem-btn-reset:hover {
@@ -1486,10 +1486,10 @@
 .problem-btn-stop {
   background: transparent;
   border-color: rgba(255, 171, 64, 0.3);
-  color: #FFAB40;
+  color: #FF7043;
 }
 .problem-btn-stop:hover {
-  border-color: #FFAB40;
+  border-color: #FF7043;
   background: rgba(255, 171, 64, 0.1);
 }
 
@@ -1670,7 +1670,7 @@
 
 .results-icon {
   font-size: 1.25rem;
-  color: #FFD54F;
+  color: #FFEE58;
 }
 
 .results-confidence {
@@ -2173,7 +2173,7 @@
   font-family: 'Space Grotesk', sans-serif;
   font-size: 3.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #4FC3F7, #CE93D8, #FFD54F);
+  background: linear-gradient(135deg, #4FC3F7, #B39DDB, #FFEE58);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -2221,7 +2221,7 @@
   font-family: 'Space Grotesk', sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--color-accent-blue), #CE93D8);
+  background: linear-gradient(135deg, var(--color-accent-blue), #B39DDB);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -2836,10 +2836,10 @@
 .text-muted { color: #4A6A8A; }
 .text-cyan { color: #4FC3F7; }
 .text-green { color: #66BB6A; }
-.text-red { color: #EF9A9A; }
-.text-purple { color: #CE93D8; }
-.text-yellow { color: #FFD54F; }
-.text-orange { color: #FFAB40; }
+.text-red { color: #EF5350; }
+.text-purple { color: #B39DDB; }
+.text-yellow { color: #FFEE58; }
+.text-orange { color: #FF7043; }
 
 /* Dynamic agent color via CSS custom property */
 .text-agent { color: var(--agent-color); }

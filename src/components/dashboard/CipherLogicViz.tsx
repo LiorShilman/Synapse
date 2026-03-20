@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { useSimStore } from '../../store/useSimStore';
+import { useTypewriter } from '../../hooks/useTypewriter';
 
 interface CipherLogicVizProps {
   thought: string;
@@ -15,12 +16,12 @@ function getVerificationStatus(thought: string): { text: string; color: string }
   if (thought.includes('הושלם') || thought.includes('אומתו') || thought.includes('מאשר') || thought.includes('תקינה'))
     return { text: 'VERIFIED', color: '#66BB6A' };
   if (thought.includes('עצור') || thought.includes('חוסר עקביות') || thought.includes('נכשל') || thought.includes('פגיעויות'))
-    return { text: 'VIOLATION', color: '#EF9A9A' };
+    return { text: 'VIOLATION', color: '#EF5350' };
   if (thought.includes('אתגר') || thought.includes('אזהרה') || thought.includes('פרקליט'))
-    return { text: 'CHALLENGE', color: '#FFAB40' };
+    return { text: 'CHALLENGE', color: '#FF7043' };
   if (thought.includes('סריקת') || thought.includes('בדיקת') || thought.includes('ביקורת'))
     return { text: 'SCANNING', color: '#4FC3F7' };
-  return { text: 'VALIDATING', color: '#EF9A9A' };
+  return { text: 'VALIDATING', color: '#EF5350' };
 }
 
 function extractChecks(thought: string): LogicCheck[] {
@@ -57,6 +58,7 @@ export default function CipherLogicViz({ thought }: CipherLogicVizProps) {
   const messages = useSimStore((s) => s.messages);
   const status = useMemo(() => getVerificationStatus(thought), [thought]);
   const checks = useMemo(() => extractChecks(thought), [thought]);
+  const displayedThought = useTypewriter(thought, 20);
 
   // Count cipher's verifications from message history
   const cipherMessages = messages.filter((m) => m.fromId === 'cipher');
@@ -125,7 +127,7 @@ export default function CipherLogicViz({ thought }: CipherLogicVizProps) {
       </div>
 
       {/* Thought */}
-      <div className="cipher-thought-text">{thought}</div>
+      <div className="cipher-thought-text">{displayedThought}</div>
     </div>
   );
 }
