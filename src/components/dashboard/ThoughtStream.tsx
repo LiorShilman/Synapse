@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AGENTS } from '../../agents/agentDefinitions';
 import { useSimStore, type Message } from '../../store/useSimStore';
 
+const BASE = import.meta.env.BASE_URL;
+
 /** Group messages with same sender+text within 500ms into one entry */
 interface GroupedMessage {
   id: string;
@@ -44,6 +46,16 @@ export default function ThoughtStream() {
   return (
     <div className="thought-stream">
       <div className="thought-stream-header">זרם מחשבות</div>
+
+      {/* Table header */}
+      <div className="ts-table-head">
+        <div className="ts-col-time">שעה</div>
+        <div className="ts-col-from">שולח</div>
+        <div className="ts-col-arrow" />
+        <div className="ts-col-to">נמען</div>
+        <div className="ts-col-msg">הודעה</div>
+      </div>
+
       <div className="thought-stream-list" ref={containerRef}>
         <AnimatePresence initial={false}>
           {grouped.map((msg) => {
@@ -62,30 +74,53 @@ export default function ThoughtStream() {
             return (
               <motion.div
                 key={msg.id}
-                className={`thought-entry ${isUserMsg ? 'thought-entry-user' : ''}`}
-                initial={{ opacity: 0, height: 0, y: -10 }}
-                animate={{ opacity: 1, height: 'auto', y: 0 }}
+                className={`ts-row ${isUserMsg ? 'ts-row-user' : ''}`}
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.25 }}
+                style={!isUserMsg && sender ? { '--row-color': sender.color } as React.CSSProperties : undefined}
               >
-                <div className="thought-entry-header">
-                  <span className="text-muted" dir="ltr">[{time}]</span>{' '}
+                {/* Time */}
+                <div className="ts-col-time ts-time" dir="ltr">{time}</div>
+
+                {/* Sender */}
+                <div className="ts-col-from">
                   {isUserMsg ? (
-                    <span className="text-cyan">משתמש</span>
-                  ) : (
-                    <>
-                      <span className="text-agent" style={{ '--agent-color': sender?.color } as React.CSSProperties}>{sender?.name}</span>
-                      <span className="text-muted"> ← </span>
-                      {receivers.map((r, i) => (
-                        <span key={r!.id}>
-                          {i > 0 && <span className="text-muted">,</span>}
-                          <span className="text-agent" style={{ '--agent-color': r!.color } as React.CSSProperties}>{r!.name}</span>
-                        </span>
-                      ))}
-                    </>
-                  )}
+                    <div className="ts-agent-chip ts-user-chip">
+                      <span className="ts-agent-icon">👤</span>
+                      <span>משתמש</span>
+                    </div>
+                  ) : sender ? (
+                    <div className="ts-agent-chip" style={{ '--agent-color': sender.color } as React.CSSProperties}>
+                      <img
+                        src={`${BASE}${sender.avatar}`}
+                        alt={sender.name}
+                        className="ts-avatar"
+                      />
+                      <span className="text-agent">{sender.name}</span>
+                    </div>
+                  ) : null}
                 </div>
-                <div className="thought-entry-text">"{msg.text}"</div>
+
+                {/* Arrow */}
+                <div className="ts-col-arrow">
+                  {!isUserMsg && <span className="ts-arrow">←</span>}
+                </div>
+
+                {/* Receivers */}
+                <div className="ts-col-to">
+                  {!isUserMsg && receivers.map((r, i) => (
+                    <div key={r!.id} className="ts-agent-chip ts-agent-chip-small" style={{ '--agent-color': r!.color } as React.CSSProperties}>
+                      <img src={`${BASE}${r!.avatar}`} alt={r!.name} className="ts-avatar ts-avatar-sm" />
+                      <span className="text-agent">{r!.name}</span>
+                      {i < receivers.length - 1 && <span className="ts-comma">,</span>}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Message text */}
+                <div className="ts-col-msg ts-msg-text">"{msg.text}"</div>
               </motion.div>
             );
           })}

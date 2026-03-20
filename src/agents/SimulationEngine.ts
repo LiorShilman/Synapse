@@ -91,11 +91,9 @@ async function executeTickInner() {
   const senderDef = AGENTS.find((a) => a.id === senderId);
   if (senderDef) playThoughtPing(senderDef.color);
 
-  // Send message once (avoid duplicates when multiple receivers)
-  store.addMessage({ fromId: senderId, toId: receivers[0], text: cleanedThought, category });
-
-  // Send to receivers
+  // Send to receivers — one message per receiver, ThoughtStream groups them visually
   for (const receiverId of receivers) {
+    store.addMessage({ fromId: senderId, toId: receiverId, text: cleanedThought, category });
     store.addActiveEdge({ fromId: senderId, toId: receiverId });
     playConnectionSweep();
 
