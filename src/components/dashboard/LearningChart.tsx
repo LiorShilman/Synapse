@@ -18,7 +18,7 @@ export default function LearningChart() {
 
     const width = container.clientWidth;
     const height = container.clientHeight;
-    const margin = { top: 8, right: 50, bottom: 8, left: 90 };
+    const margin = { top: 8, right: 50, bottom: 22, left: 90 };
     const innerW = width - margin.left - margin.right;
     const innerH = height - margin.top - margin.bottom;
 
@@ -59,12 +59,12 @@ export default function LearningChart() {
       .attr('stroke-dasharray', '4,4')
       .attr('stroke-opacity', 0.3);
     g.append('text')
-      .attr('x', threshX).attr('y', offsetY - 6)
-      .attr('text-anchor', 'middle')
-      .attr('fill', '#4FC3F7').attr('font-size', '7.5px')
+      .attr('x', threshX + 3).attr('y', offsetY + totalH + 14)
+      .attr('text-anchor', 'start')
+      .attr('fill', '#4FC3F7').attr('font-size', '8px')
       .attr('font-family', 'JetBrains Mono, monospace')
-      .attr('opacity', 0.4)
-      .text('70%');
+      .attr('opacity', 0.5)
+      .text('סף 70%');
 
     AGENTS.forEach((agentDef, i) => {
       const y = offsetY + i * (barHeight + gap);
