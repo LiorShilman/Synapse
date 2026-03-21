@@ -10,7 +10,6 @@ export default function LearningChart() {
   const agents = useSimStore((s) => s.agents);
   const initializedRef = useRef(false);
 
-  // One-time setup: create all static elements (defs, tracks, threshold, avatars, labels)
   const initChart = useCallback(() => {
     if (!svgRef.current) return;
     const svg = d3.select(svgRef.current);
@@ -19,23 +18,23 @@ export default function LearningChart() {
 
     const width = container.clientWidth;
     const height = container.clientHeight;
-    const margin = { top: 16, right: 16, bottom: 34, left: 16 };
+    const margin = { top: 8, right: 50, bottom: 8, left: 90 };
     const innerW = width - margin.left - margin.right;
     const innerH = height - margin.top - margin.bottom;
 
     svg.attr('width', width).attr('height', height);
     svg.selectAll('*').remove();
 
-    // Gradient defs
+    // Gradient defs — horizontal: left to right
     const defs = svg.append('defs');
     AGENTS.forEach((agentDef) => {
       const grad = defs.append('linearGradient')
         .attr('id', `bar-grad-${agentDef.id}`)
-        .attr('x1', '0').attr('y1', '1')
-        .attr('x2', '0').attr('y2', '0');
+        .attr('x1', '0').attr('y1', '0')
+        .attr('x2', '1').attr('y2', '0');
       grad.append('stop').attr('offset', '0%')
-        .attr('stop-color', agentDef.color).attr('stop-opacity', 0.15);
-      grad.append('stop').attr('offset', '60%')
+        .attr('stop-color', agentDef.color).attr('stop-opacity', 0.2);
+      grad.append('stop').attr('offset', '50%')
         .attr('stop-color', agentDef.color).attr('stop-opacity', 0.6);
       grad.append('stop').attr('offset', '100%')
         .attr('stop-color', agentDef.color).attr('stop-opacity', 0.95);
@@ -45,153 +44,138 @@ export default function LearningChart() {
       .attr('class', 'chart-root')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const yScale = d3.scaleLinear().domain([0, 100]).range([innerH, 0]);
-
-    // Subtle horizontal grid lines
-    [25, 50, 75].forEach((tick) => {
-      g.append('line')
-        .attr('x1', 0).attr('x2', innerW)
-        .attr('y1', yScale(tick)).attr('y2', yScale(tick))
-        .attr('stroke', '#111D30').attr('stroke-width', 0.5)
-        .attr('stroke-dasharray', '3,6');
-    });
+    const barCount = AGENTS.length;
+    const gap = 6;
+    const barHeight = Math.min(28, (innerH - gap * (barCount - 1)) / barCount);
+    const totalH = barCount * barHeight + (barCount - 1) * gap;
+    const offsetY = (innerH - totalH) / 2;
 
     // Threshold line at 70%
+    const threshX = (70 / 100) * innerW;
     g.append('line')
-      .attr('x1', 0).attr('x2', innerW)
-      .attr('y1', yScale(70)).attr('y2', yScale(70))
+      .attr('x1', threshX).attr('x2', threshX)
+      .attr('y1', offsetY - 4).attr('y2', offsetY + totalH + 4)
       .attr('stroke', '#4FC3F7').attr('stroke-width', 0.7)
-      .attr('stroke-dasharray', '6,4')
-      .attr('stroke-opacity', 0.25);
+      .attr('stroke-dasharray', '4,4')
+      .attr('stroke-opacity', 0.3);
     g.append('text')
-      .attr('x', innerW).attr('y', yScale(70) - 5)
-      .attr('text-anchor', 'end')
+      .attr('x', threshX).attr('y', offsetY - 6)
+      .attr('text-anchor', 'middle')
       .attr('fill', '#4FC3F7').attr('font-size', '7.5px')
       .attr('font-family', 'JetBrains Mono, monospace')
       .attr('opacity', 0.4)
       .text('70%');
 
-    // Bottom baseline
-    g.append('line')
-      .attr('x1', 0).attr('x2', innerW)
-      .attr('y1', innerH).attr('y2', innerH)
-      .attr('stroke', '#1A2A4A').attr('stroke-width', 0.5);
-
-    const barCount = AGENTS.length;
-    const gap = Math.max(10, innerW * 0.04);
-    const barWidth = Math.min(52, (innerW - gap * (barCount + 1)) / barCount);
-    const totalBarsWidth = barCount * barWidth + (barCount - 1) * gap;
-    const offsetX = (innerW - totalBarsWidth) / 2;
-
     AGENTS.forEach((agentDef, i) => {
-      const x = offsetX + i * (barWidth + gap);
+      const y = offsetY + i * (barHeight + gap);
 
-      // Bar background track — subtle rounded column
+      // Avatar — left side
+      const clipId = `avatar-clip-${agentDef.id}`;
+      const avatarSize = Math.min(barHeight - 2, 22);
+      const avatarCx = -54;
+      const avatarCy = y + barHeight / 2;
+
+      defs.append('clipPath').attr('id', clipId)
+        .append('circle').attr('cx', avatarCx).attr('cy', avatarCy).attr('r', avatarSize / 2);
+
+      g.append('circle')
+        .attr('cx', avatarCx).attr('cy', avatarCy).attr('r', avatarSize / 2 + 1.5)
+        .attr('fill', 'none')
+        .attr('stroke', agentDef.color).attr('stroke-width', 1.5)
+        .attr('opacity', 0.4);
+
+      g.append('image')
+        .attr('href', `${BASE}${agentDef.avatar}`)
+        .attr('x', avatarCx - avatarSize / 2)
+        .attr('y', avatarCy - avatarSize / 2)
+        .attr('width', avatarSize).attr('height', avatarSize)
+        .attr('preserveAspectRatio', 'xMidYMin slice')
+        .attr('clip-path', `url(#${clipId})`);
+
+      // Agent name — between avatar and bar
+      g.append('text')
+        .attr('x', -8).attr('y', y + barHeight / 2 + 4)
+        .attr('text-anchor', 'end')
+        .attr('fill', agentDef.color)
+        .attr('font-size', '10px')
+        .attr('font-weight', '600')
+        .attr('font-family', 'JetBrains Mono, monospace')
+        .attr('opacity', 0.8)
+        .text(agentDef.name);
+
+      // Bar background track
       g.append('rect')
-        .attr('x', x).attr('y', 0)
-        .attr('width', barWidth).attr('height', innerH)
-        .attr('rx', 5).attr('ry', 5)
-        .attr('fill', 'rgba(100, 160, 255, 0.025)');
+        .attr('x', 0).attr('y', y)
+        .attr('width', innerW).attr('height', barHeight)
+        .attr('rx', 4).attr('ry', 4)
+        .attr('fill', 'rgba(100, 160, 255, 0.03)');
 
-      // Bar fill — starts at bottom, will be animated on update
+      // Bar fill — starts at 0 width, animated on update
       g.append('rect')
         .attr('class', `bar-fill-${agentDef.id}`)
-        .attr('x', x).attr('y', innerH)
-        .attr('width', barWidth).attr('height', 0)
-        .attr('rx', 5).attr('ry', 5)
+        .attr('x', 0).attr('y', y)
+        .attr('width', 0).attr('height', barHeight)
+        .attr('rx', 4).attr('ry', 4)
         .attr('fill', `url(#bar-grad-${agentDef.id})`);
 
-      // Top glow line
+      // Right-edge glow
       g.append('rect')
         .attr('class', `bar-glow-${agentDef.id}`)
-        .attr('x', x + 3).attr('y', innerH)
-        .attr('width', barWidth - 6).attr('height', 2)
+        .attr('x', 0).attr('y', y + 2)
+        .attr('width', 2).attr('height', barHeight - 4)
         .attr('rx', 1)
         .attr('fill', agentDef.color)
         .attr('opacity', 0);
 
-      // Percentage text
+      // Percentage label — to the right of bar
       g.append('text')
         .attr('class', `bar-label-${agentDef.id}`)
-        .attr('x', x + barWidth / 2).attr('y', innerH - 6)
-        .attr('text-anchor', 'middle')
+        .attr('x', 4).attr('y', y + barHeight / 2 + 4)
+        .attr('text-anchor', 'start')
         .attr('fill', agentDef.color)
         .attr('font-size', '11px')
         .attr('font-weight', '700')
         .attr('font-family', 'JetBrains Mono, monospace')
         .text('0%');
-
-      // Avatar circle — clipped
-      const clipId = `avatar-clip-${agentDef.id}`;
-      const avatarSize = 20;
-      const cx = x + barWidth / 2;
-      const cy = innerH + 6 + avatarSize / 2;
-
-      defs.append('clipPath').attr('id', clipId)
-        .append('circle').attr('cx', cx).attr('cy', cy).attr('r', avatarSize / 2);
-
-      // Avatar ring
-      g.append('circle')
-        .attr('cx', cx).attr('cy', cy).attr('r', avatarSize / 2 + 1.5)
-        .attr('fill', 'none')
-        .attr('stroke', agentDef.color).attr('stroke-width', 1.5)
-        .attr('opacity', 0.4);
-
-      // Avatar image
-      g.append('image')
-        .attr('href', `${BASE}${agentDef.avatar}`)
-        .attr('x', cx - avatarSize / 2)
-        .attr('y', cy - avatarSize / 2)
-        .attr('width', avatarSize).attr('height', avatarSize)
-        .attr('preserveAspectRatio', 'xMidYMin slice')
-        .attr('clip-path', `url(#${clipId})`);
     });
 
     initializedRef.current = true;
   }, []);
 
-  // Update: only animate bar heights and label text — no flickering
   const updateChart = useCallback(() => {
     if (!svgRef.current || !initializedRef.current) return;
     const svg = d3.select(svgRef.current);
     const container = svgRef.current.parentElement;
     if (!container) return;
 
-    const height = container.clientHeight;
-    const margin = { top: 16, bottom: 34 };
-    const innerH = height - margin.top - margin.bottom;
+    const width = container.clientWidth;
+    const margin = { right: 50, left: 90 };
+    const innerW = width - margin.left - margin.right;
 
     AGENTS.forEach((agentDef) => {
       const confidence = agents[agentDef.id]?.confidence ?? 0;
-      const barH = (confidence / 100) * innerH;
-      const y = innerH - barH;
+      const barW = (confidence / 100) * innerW;
 
-      // Smooth bar transition
       svg.select(`.bar-fill-${agentDef.id}`)
         .transition().duration(500).ease(d3.easeCubicOut)
-        .attr('y', y)
-        .attr('height', barH);
+        .attr('width', barW);
 
-      // Move glow to top of bar
       svg.select(`.bar-glow-${agentDef.id}`)
         .transition().duration(500).ease(d3.easeCubicOut)
-        .attr('y', y - 1)
-        .attr('opacity', confidence > 5 ? 0.5 : 0);
+        .attr('x', barW - 1)
+        .attr('opacity', confidence > 5 ? 0.6 : 0);
 
-      // Update label position and text
       svg.select(`.bar-label-${agentDef.id}`)
         .text(`${confidence}%`)
         .transition().duration(500).ease(d3.easeCubicOut)
-        .attr('y', Math.max(y - 5, 12));
+        .attr('x', barW + 6);
     });
   }, [agents]);
 
-  // Init once
   useEffect(() => {
     initChart();
   }, [initChart]);
 
-  // Update on every agents change
   useEffect(() => {
     updateChart();
   }, [updateChart]);
